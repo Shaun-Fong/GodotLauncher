@@ -91,6 +91,9 @@ The download pipeline is:
 6. Locate the editor executable, move the staging directory into place and register the installation.
 7. Delete the archive and staging directory.
 
+Leftover `.part` files are kept, so asking for the same download again after a restart resumes it.
+Staging directories older than an hour are removed at startup instead of accumulating.
+
 The registry (`installed.json`) records one entry per version, edition and architecture, including the
 executable path relative to the install directory, size on disk, source, hash, pinned/alias flags, last
 launch time and default flag. Writes are atomic (temporary file plus replace). A corrupt registry is

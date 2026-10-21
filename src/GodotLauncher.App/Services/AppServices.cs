@@ -326,6 +326,23 @@ public sealed class AppServices : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Removes extraction directories left behind by an interrupted install.</summary>
+    public void CleanStagingDirectories()
+    {
+        try
+        {
+            var removed = Installer.CleanStagingDirectories(TimeSpan.FromHours(1));
+            if (removed > 0)
+            {
+                Log.Info($"Removed {removed} stale staging director{(removed == 1 ? "y" : "ies")}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Could not clean the staging directory.", ex);
+        }
+    }
+
     /// <summary>Writes pending settings to disk immediately.</summary>
     public void FlushSettings()
     {

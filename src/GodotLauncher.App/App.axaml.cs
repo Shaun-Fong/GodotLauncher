@@ -34,6 +34,9 @@ public partial class App : Application
         _services = services;
         var servicesMs = startup.ElapsedMilliseconds;
 
+        // Scratch space from an interrupted install is never needed after a restart.
+        services.CleanStagingDirectories();
+
         // Reading the cache is a local file access and guarantees a populated first frame.
         try
         {
