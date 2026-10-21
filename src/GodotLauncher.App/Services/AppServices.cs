@@ -668,18 +668,5 @@ public sealed class AppServices : INotifyPropertyChanged
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-    private static HttpClient CreateHttpClient(bool decompress, TimeSpan timeout)
-    {
-        var handler = new SocketsHttpHandler
-        {
-            AllowAutoRedirect = true,
-            AutomaticDecompression = decompress ? DecompressionMethods.All : DecompressionMethods.None,
-            ConnectTimeout = TimeSpan.FromSeconds(20),
-            PooledConnectionLifetime = TimeSpan.FromMinutes(5)
-        };
 
-        var client = new HttpClient(handler) { Timeout = timeout };
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("GodotLauncher", AppVersion));
-        return client;
-    }
 }
