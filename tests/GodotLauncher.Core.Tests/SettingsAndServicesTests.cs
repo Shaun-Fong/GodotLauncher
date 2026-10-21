@@ -86,8 +86,11 @@ public sealed class SettingsStoreTests
         }.Normalize();
 
         Assert.Equal(4, settings.ConcurrentDownloads);
-        Assert.Equal(1, settings.RefreshIntervalHours);
+        Assert.Equal(0, settings.RefreshIntervalHours);
         Assert.Equal("en", settings.Language);
+
+        var clamped = (new LauncherSettings { RefreshIntervalHours = 500 }).Normalize();
+        Assert.Equal(168, clamped.RefreshIntervalHours);
     }
 
     [Fact]

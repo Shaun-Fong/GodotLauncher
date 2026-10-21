@@ -26,6 +26,19 @@ public enum AfterLaunchBehavior
     Quit,
 }
 
+/// <summary>How outgoing HTTP requests pick a proxy.</summary>
+public enum ProxyMode
+{
+    /// <summary>Use the operating system proxy configuration.</summary>
+    System,
+
+    /// <summary>Connect directly, ignoring any system proxy.</summary>
+    None,
+
+    /// <summary>Use the proxy server in <see cref="LauncherSettings.ProxyUrl"/>.</summary>
+    Custom,
+}
+
 /// <summary>
 /// User settings, persisted as TOML in <c>config.toml</c>. Properties keep the
 /// values already validated by <see cref="Normalize"/>.
@@ -55,6 +68,12 @@ public sealed record LauncherSettings
 
     /// <summary>Optional download mirror template with <c>{slug}</c> style placeholders.</summary>
     public string MirrorTemplate { get; init; } = string.Empty;
+
+    /// <summary>Proxy selection for catalog, download and update requests.</summary>
+    public ProxyMode Proxy { get; init; } = ProxyMode.System;
+
+    /// <summary>HTTP proxy URL used when <see cref="Proxy"/> is <see cref="ProxyMode.Custom"/>.</summary>
+    public string ProxyUrl { get; init; } = string.Empty;
 
     /// <summary>Maximum number of simultaneous downloads (1-4).</summary>
     public int ConcurrentDownloads { get; init; } = 2;
@@ -94,8 +113,9 @@ public sealed record LauncherSettings
             Language = language,
             InstallRoot = InstallRoot?.Trim() ?? string.Empty,
             MirrorTemplate = MirrorTemplate?.Trim() ?? string.Empty,
+            ProxyUrl = ProxyUrl?.Trim() ?? string.Empty,
             ConcurrentDownloads = Math.Clamp(ConcurrentDownloads, 1, 4),
-            RefreshIntervalHours = Math.Clamp(RefreshIntervalHours, 1, 168),
+            RefreshIntervalHours = Math.Clamp(RefreshIntervalHours, 0, 168),
         };
     }
 }

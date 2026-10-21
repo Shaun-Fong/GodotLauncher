@@ -9,6 +9,7 @@ public sealed class SettingsStore
     private const string DownloadsSection = "downloads";
     private const string UpdatesSection = "updates";
     private const string NotificationsSection = "notifications";
+    private const string NetworkSection = "network";
 
     private readonly string _filePath;
 
@@ -76,6 +77,11 @@ public sealed class SettingsStore
         builder.AppendLine($"concurrent_downloads = {settings.ConcurrentDownloads.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
         builder.AppendLine();
 
+        builder.AppendLine($"[{NetworkSection}]");
+        builder.AppendLine($"proxy = {TomlDocument.Quote(settings.Proxy.ToString().ToLowerInvariant())}");
+        builder.AppendLine($"proxy_url = {TomlDocument.Quote(settings.ProxyUrl)}");
+        builder.AppendLine();
+
         builder.AppendLine($"[{UpdatesSection}]");
         builder.AppendLine($"refresh_interval_hours = {settings.RefreshIntervalHours.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
         builder.AppendLine($"show_older_versions = {Boolean(settings.ShowOlderVersions)}");
@@ -123,6 +129,8 @@ public sealed class SettingsStore
             Autostart = document.TryGetBool(GeneralSection, "autostart", out var autostart) && autostart,
             InstallRoot = document.TryGetString(DownloadsSection, "install_root", out var installRoot) ? installRoot : string.Empty,
             MirrorTemplate = document.TryGetString(DownloadsSection, "mirror_template", out var mirror) ? mirror : string.Empty,
+            Proxy = document.TryGetEnum<ProxyMode>(NetworkSection, "proxy", out var proxy) ? proxy : defaults.Proxy,
+            ProxyUrl = document.TryGetString(NetworkSection, "proxy_url", out var proxyUrl) ? proxyUrl : string.Empty,
             ConcurrentDownloads = document.TryGetInt(DownloadsSection, "concurrent_downloads", out var concurrent)
                 ? concurrent
                 : defaults.ConcurrentDownloads,
