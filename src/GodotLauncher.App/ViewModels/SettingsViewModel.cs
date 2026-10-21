@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using System.Globalization;
 using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -136,8 +137,16 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     protected override void OnLanguageChanged()
     {
-        BuildOptions();
-        Load();
+        // Rebuilding the option lists inside the ComboBox's own selection callback
+        // leaves that ComboBox without a selection, so its text disappears. Let the
+        // input event finish first, then rebuild and restore the selections.
+        Dispatcher.UIThread.Post(
+            () =>
+            {
+                BuildOptions();
+                Load();
+            },
+            DispatcherPriority.Background);
     }
 
     protected override void OnSettingsChanged()

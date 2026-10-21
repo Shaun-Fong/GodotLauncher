@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GodotLauncher.App.Downloads;
@@ -184,16 +185,23 @@ public sealed partial class ExploreViewModel : ViewModelBase
 
     protected override void OnLanguageChanged()
     {
-        BuildOptions();
-        foreach (var card in _cards.Values)
-        {
-            card.RefreshState();
-        }
+        // Rebuilding the filter lists while a ComboBox is committing its selection
+        // clears that selection; defer the rebuild until the input event is over.
+        Dispatcher.UIThread.Post(
+            () =>
+            {
+                BuildOptions();
+                foreach (var card in _cards.Values)
+                {
+                    card.RefreshState();
+                }
 
-        if (_activated)
-        {
-            Rebuild();
-        }
+                if (_activated)
+                {
+                    Rebuild();
+                }
+            },
+            DispatcherPriority.Background);
     }
 
     protected override void OnInstallationsChanged() => RefreshCardStates();
