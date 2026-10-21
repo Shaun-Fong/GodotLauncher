@@ -207,6 +207,43 @@ public sealed class Installer
         }
     }
 
+    /// <summary>
+    /// Deletes staging directories left behind by interrupted installs. Only directories last written
+    /// before <paramref name="minimumAge"/> are removed so a concurrent install is never disturbed.
+    /// </summary>
+    public int CleanStagingDirectories(TimeSpan minimumAge)
+    {
+        if (!Directory.Exists(_paths.StagingDirectory))
+        {
+            return 0;
+        }
+
+        var removed = 0;
+        var cutoff = DateTime.UtcNow - minimumAge;
+        foreach (var directory in Directory.EnumerateDirectories(_paths.StagingDirectory))
+        {
+            try
+            {
+                if (Directory.GetLastWriteTimeUtc(directory) > cutoff)
+                {
+                    continue;
+                }
+            }
+            catch (IOException)
+            {
+                continue;
+            }
+
+            TryDeleteDirectory(directory);
+            if (!Directory.Exists(directory))
+            {
+                removed++;
+            }
+        }
+
+        return removed;
+    }
+
     /// <summary>Deletes a directory, ignoring the usual access and in-use errors.</summary>
     public static void TryDeleteDirectory(string directory)
     {

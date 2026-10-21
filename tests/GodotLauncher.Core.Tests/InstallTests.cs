@@ -175,6 +175,24 @@ public sealed class InstallerTests
     }
 
     [Fact]
+    public void CleanStagingDirectories_RemovesOnlyStaleDirectories()
+    {
+        using var temp = new TempDirectory();
+        var paths = AppPaths.CreateFor(temp.Path);
+        paths.EnsureDirectories();
+        var installer = new Installer(paths, HostPlatform.Windows);
+        var stale = Directory.CreateDirectory(Path.Combine(paths.StagingDirectory, "4.7.2-stable-standard-old"));
+        var fresh = Directory.CreateDirectory(Path.Combine(paths.StagingDirectory, "4.7.2-stable-standard-new"));
+        Directory.SetLastWriteTimeUtc(stale.FullName, DateTime.UtcNow.AddHours(-2));
+
+        var removed = installer.CleanStagingDirectories(TimeSpan.FromHours(1));
+
+        Assert.Equal(1, removed);
+        Assert.False(Directory.Exists(stale.FullName));
+        Assert.True(Directory.Exists(fresh.FullName));
+    }
+
+    [Fact]
     public async Task InstallAsync_RefusesToOverwriteAnExistingInstallation()
     {
         using var temp = new TempDirectory();
