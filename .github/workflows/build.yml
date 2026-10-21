@@ -48,7 +48,7 @@ jobs:
           - os: ubuntu-latest
             rid: linux-x64
             archive: tar.gz
-          - os: macos-13
+          - os: macos-15-intel
             rid: osx-x64
             archive: tar.gz
           - os: macos-14
