@@ -6,7 +6,7 @@
     <Deterministic>true</Deterministic>
     <InvariantGlobalization>false</InvariantGlobalization>
 
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Authors>GodotLauncher contributors</Authors>
     <Product>Godot Launcher</Product>
     <Company>GodotLauncher</Company>

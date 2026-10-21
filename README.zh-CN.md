@@ -101,7 +101,7 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 
 ## 当前状态
 
-当前版本为 0.3.0。已实现：版本目录、下载与安装、启动编辑器、项目库、已安装管理、托盘、主题、
+当前版本为 0.3.1。已实现：版本目录、下载与安装、启动编辑器、项目库、已安装管理、托盘、主题、
 多语言、设置、代理支持、启动器自更新、单实例和可选开机自启。
 
 已知差距记录在 [docs/DECISIONS.md](docs/DECISIONS.md#known-gaps)，包括冷启动约 0.9 秒（目标是 300 毫秒），

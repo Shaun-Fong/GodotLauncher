@@ -113,7 +113,7 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 
 ## Status
 
-Version 0.3.0 is the current release. Implemented: release catalog, downloads and installation,
+Version 0.3.1 is the current release. Implemented: release catalog, downloads and installation,
 launching, project library, installed editor management, tray, themes, localization, settings, proxy
 support, launcher self-update, single instance and optional autostart.
 
