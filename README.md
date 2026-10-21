@@ -50,6 +50,8 @@ from GitHub Actions.
 
 ![Versions page in the light theme](docs/images/explore-light.png)
 
+![Notification banner and the NEW badge](docs/images/notifications.png)
+
 ![Projects page in the dark theme](docs/images/projects.png)
 
 ## Download
