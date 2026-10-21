@@ -45,7 +45,7 @@ Otherwise Avalonia is started and `App` builds the object graph:
    catalog service, asset resolver, downloader, installer, installation library and download manager.
 2. The cached catalog is read from disk on a worker thread and assigned before the window is created.
 3. The installation library is loaded the same way.
-4. `MainWindow` is created and shown. Explore cards, the tray icon and secondary pages are deferred to
+4. `MainWindow` is created and shown. Version cards, the tray icon and secondary pages are deferred to
    `DispatcherPriority.Background` work so the first frame is not blocked.
 5. A background catalog refresh runs, and a 30 minute timer refreshes again when
    `refresh_interval_hours` allows it.

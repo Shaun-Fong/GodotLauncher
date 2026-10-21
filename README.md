@@ -9,7 +9,7 @@ without a terminal window flashing on screen.
 Built with C#, .NET 10 and Avalonia 11. Single-file builds are published for Windows, Linux and macOS
 from GitHub Actions.
 
-![Explore page in the dark theme](docs/images/explore-dark.png)
+![Versions page in the dark theme](docs/images/explore-dark.png)
 
 ## Features
 
@@ -48,7 +48,7 @@ from GitHub Actions.
 - **Update checks** — the settings page asks GitHub for the latest launcher release and downloads the
   archive that matches the current platform.
 
-![Explore page in the light theme](docs/images/explore-light.png)
+![Versions page in the light theme](docs/images/explore-light.png)
 
 ![Projects page in the dark theme](docs/images/projects.png)
 
