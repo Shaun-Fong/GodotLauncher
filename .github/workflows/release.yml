@@ -125,6 +125,12 @@ jobs:
           sha256sum GodotLauncher-*.zip GodotLauncher-*.tar.gz > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+
       - name: Resolve tag
         id: tag
         shell: bash
