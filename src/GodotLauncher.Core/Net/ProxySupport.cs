@@ -7,7 +7,8 @@ namespace GodotLauncher.Core.Net;
 public static class ProxySupport
 {
     /// <summary>Application version used in the User-Agent header.</summary>
-    public static string UserAgent { get; set; } = "GodotLauncher/0.1.0";
+    public static string UserAgent { get; set; } =
+        $"GodotLauncher/{typeof(ProxySupport).Assembly.GetName().Version?.ToString(3) ?? "1.0.0"}";
 
     /// <summary>
     /// Creates a client for catalog, API and download traffic.
