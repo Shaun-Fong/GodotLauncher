@@ -218,6 +218,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
         OnCatalogChanged();
     }
 
+    protected override void OnSettingsChanged()
+    {
+        UpdateBanner();
+    }
+
     partial void OnPageChanged(ShellPage value)
     {
         OnPropertyChanged(nameof(IsExploreSelected));
@@ -245,13 +250,64 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
         OnPropertyChanged(nameof(DownloadProgressText));
         UpdateStatus();
         UpdateCounts();
+        UpdateBanner();
+    }
 
-        if (!_bannerDismissed && Services.NewVersionIds.Count > 0)
+    private void UpdateBanner()
+    {
+        if (_bannerDismissed)
         {
-            BannerTitle = string.Format(CultureInfo.CurrentCulture, L.Banner.NewVersions, Services.NewVersionIds.Count);
-            BannerDetail = L.Banner.NewVersionsHint;
-            IsBannerVisible = true;
+            return;
         }
+
+        var count = CountNotifiableNewVersions();
+        if (count == 0)
+        {
+            IsBannerVisible = false;
+            return;
+        }
+
+        BannerTitle = string.Format(CultureInfo.CurrentCulture, L.Banner.NewVersions, count);
+        BannerDetail = L.Banner.NewVersionsHint;
+        IsBannerVisible = true;
+    }
+
+    /// <summary>
+    /// Counts releases that appeared since the previous refresh for channels the user asked to be
+    /// notified about. Notification channels are off by default, so a first run stays quiet.
+    /// </summary>
+    private int CountNotifiableNewVersions()
+    {
+        var catalog = Services.Catalog;
+        if (catalog is null || Services.NewVersionIds.Count == 0)
+        {
+            return 0;
+        }
+
+        var settings = Services.Settings;
+        var count = 0;
+        foreach (var version in catalog.Versions)
+        {
+            if (!Services.NewVersionIds.Contains(version.Id))
+            {
+                continue;
+            }
+
+            var enabled = version.Channel switch
+            {
+                ReleaseChannel.Stable => settings.NotifyStable,
+                ReleaseChannel.Rc => settings.NotifyRc,
+                ReleaseChannel.Beta => settings.NotifyBeta,
+                _ => settings.NotifyDev,
+            };
+
+            if (enabled)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private void OnDownloadCompleted(DownloadItem item)

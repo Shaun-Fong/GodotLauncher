@@ -114,7 +114,7 @@
   "Settings.IntervalNever": "从不",
   "Settings.ShowOlder": "显示 4.x 之前的版本",
   "Settings.Notifications": "通知",
-  "Settings.NotificationsHint": "当某个通道出现新版本时显示系统通知。",
+  "Settings.NotificationsHint": "当某个通道出现新版本时，在应用内显示提示。",
   "Settings.About": "关于",
   "Settings.Version": "版本",
   "Settings.DataFolder": "数据目录",

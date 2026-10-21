@@ -114,7 +114,7 @@
   "Settings.IntervalNever": "Never",
   "Settings.ShowOlder": "Show versions older than 4.x",
   "Settings.Notifications": "Notifications",
-  "Settings.NotificationsHint": "Show a system notification when a new release appears in a channel.",
+  "Settings.NotificationsHint": "Show an in-app banner when a new release appears in a channel.",
   "Settings.About": "About",
   "Settings.Version": "Version",
   "Settings.DataFolder": "Data folder",
