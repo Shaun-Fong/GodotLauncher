@@ -1,0 +1,29 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+artifacts/
+publish/
+*.user
+*.suo
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.swp
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local runtime data
+.local/
+*.log
+
+# The design draft is intentionally kept out of the repository.
+/godot-launcher-design.txt

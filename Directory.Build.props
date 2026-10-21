@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>false</InvariantGlobalization>
+
+    <Version>0.1.0</Version>
+    <Authors>GodotLauncher contributors</Authors>
+    <Product>Godot Launcher</Product>
+    <Company>GodotLauncher</Company>
+    <Copyright>MIT Licensed</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/GodotLauncher/GodotLauncher</RepositoryUrl>
+
+    <!-- Keep build output tidy and reproducible. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>

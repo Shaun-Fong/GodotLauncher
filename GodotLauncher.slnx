@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GodotLauncher.App/GodotLauncher.App.csproj" />
+    <Project Path="src/GodotLauncher.Core/GodotLauncher.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GodotLauncher.Core.Tests/GodotLauncher.Core.Tests.csproj" />
+  </Folder>
+</Solution>
