@@ -280,6 +280,8 @@ public sealed class SettingsStrings(IReadOnlyDictionary<string, string> values) 
 
     public string ProxyUrlHint => Get(nameof(ProxyUrlHint));
 
+    public string ProxyInvalid => Get(nameof(ProxyInvalid));
+
     public string CheckUpdates => Get(nameof(CheckUpdates));
 
     public string CheckingUpdates => Get(nameof(CheckingUpdates));
@@ -293,6 +295,8 @@ public sealed class SettingsStrings(IReadOnlyDictionary<string, string> values) 
     public string UpdateDownloaded => Get(nameof(UpdateDownloaded));
 
     public string UpdateCheckFailed => Get(nameof(UpdateCheckFailed));
+
+    public string UpdateRateLimited => Get(nameof(UpdateRateLimited));
 
     public string InstallUpdate => Get(nameof(InstallUpdate));
 

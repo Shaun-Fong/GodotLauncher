@@ -2,11 +2,13 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using System.Globalization;
+using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GodotLauncher.App.Localization;
 using GodotLauncher.App.Mvvm;
 using GodotLauncher.App.Services;
+using GodotLauncher.Core.Net;
 using GodotLauncher.Core.Settings;
 using GodotLauncher.Core.Updates;
 using GodotLauncher.Core.Storage;
@@ -99,6 +101,13 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _proxyUrl = string.Empty;
+
+    [ObservableProperty]
+    private string _proxyError = string.Empty;
+
+    public bool HasProxyError => !string.IsNullOrEmpty(ProxyError);
+
+    partial void OnProxyErrorChanged(string value) => OnPropertyChanged(nameof(HasProxyError));
 
     [ObservableProperty]
     private string _savedText = string.Empty;
@@ -208,6 +217,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
             return;
         }
 
+        ProxyError = string.Empty;
         Apply(settings => settings with { Proxy = value.Value });
     }
 
@@ -311,7 +321,15 @@ public sealed partial class SettingsViewModel : ViewModelBase
             return;
         }
 
-        Apply(settings => settings with { ProxyUrl = ProxyUrl.Trim() });
+        var url = ProxyUrl.Trim();
+        if (SelectedProxy?.Value == ProxyMode.Custom && ProxySupport.ParseProxy(url) is null)
+        {
+            ProxyError = L.Settings.ProxyInvalid;
+            return;
+        }
+
+        ProxyError = string.Empty;
+        Apply(settings => settings with { ProxyUrl = url });
     }
 
     [RelayCommand]
@@ -320,6 +338,23 @@ public sealed partial class SettingsViewModel : ViewModelBase
         if (IsCheckingUpdates)
         {
             return;
+        }
+
+        // Apply a proxy typed into the box but not saved yet: users expect the
+        // check button to use what they see on screen.
+        if (!_loading)
+        {
+            var proxy = SelectedProxy?.Value ?? Services.Settings.Proxy;
+            var url = ProxyUrl.Trim();
+            if (proxy == ProxyMode.Custom && ProxySupport.ParseProxy(url) is null)
+            {
+                ProxyError = L.Settings.ProxyInvalid;
+                UpdateStatus = L.Settings.ProxyInvalid;
+                return;
+            }
+
+            ProxyError = string.Empty;
+            Services.UpdateSettings(settings => settings with { Proxy = proxy, ProxyUrl = url }, save: false);
         }
 
         IsCheckingUpdates = true;
@@ -337,16 +372,42 @@ public sealed partial class SettingsViewModel : ViewModelBase
                 UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateAvailable, release.Tag);
             }
         }
+        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
+        {
+            Services.Log.Warn($"GitHub rate limit reached while checking for launcher updates: {exception.Message}");
+            HasUpdate = false;
+            UpdateStatus = L.Settings.UpdateRateLimited;
+        }
         catch (Exception exception)
         {
             Services.Log.Warn($"Could not check for launcher updates: {exception.Message}");
             HasUpdate = false;
-            UpdateStatus = L.Settings.UpdateCheckFailed;
+            UpdateStatus = DescribeUpdateFailure(exception);
         }
         finally
         {
             IsCheckingUpdates = false;
         }
+    }
+
+    private string DescribeUpdateFailure(Exception exception)
+    {
+        var detail = exception.Message;
+        if (exception.InnerException is { } inner
+            && !detail.Contains(inner.Message, StringComparison.Ordinal))
+        {
+            detail = $"{detail} {inner.Message}";
+        }
+
+        detail = detail.Trim();
+        if (detail.Length > 160)
+        {
+            detail = detail[..160] + "...";
+        }
+
+        return string.IsNullOrEmpty(detail)
+            ? L.Settings.UpdateCheckFailed
+            : $"{L.Settings.UpdateCheckFailed} {detail}";
     }
 
     [RelayCommand]

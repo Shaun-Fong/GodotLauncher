@@ -380,7 +380,9 @@ public sealed class AppServices : INotifyPropertyChanged
         {
             Log.Warn($"Update check failed: {ex.Message}");
             SetNetworkIssue(ex.Message);
-            return null;
+            // Callers such as the settings page need the real failure reason;
+            // swallowing it here made every failed check look like "up to date".
+            throw;
         }
         finally
         {

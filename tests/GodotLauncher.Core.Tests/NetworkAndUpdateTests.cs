@@ -53,7 +53,8 @@ public sealed class NetworkSettingsTests : IDisposable
         var proxy = ProxySupport.ParseProxy(value);
 
         Assert.NotNull(proxy);
-        Assert.Equal(expected, proxy!.GetProxy(new Uri("https://github.com")).ToString());
+        var address = proxy!.GetProxy(new Uri("https://github.com"));
+        Assert.Equal(expected, address?.ToString());
     }
 
     [Fact]

@@ -33,7 +33,13 @@ public static class ProxySupport
 
             case ProxyMode.Custom:
                 var proxy = ParseProxy(settings.ProxyUrl);
-                if (proxy is not null)
+                if (proxy is null)
+                {
+                    // Fail closed: a mistyped proxy must not silently fall back
+                    // to the system proxy, which is what confused users report.
+                    handler.UseProxy = false;
+                }
+                else
                 {
                     handler.Proxy = proxy;
                     handler.UseProxy = true;
@@ -80,6 +86,16 @@ public static class ProxySupport
             return null;
         }
 
-        return new WebProxy(uri);
+        var webProxy = new WebProxy(uri);
+        if (!string.IsNullOrEmpty(uri.UserInfo))
+        {
+            // Credentials embedded in the URL are not read by WebProxy itself.
+            var parts = uri.UserInfo.Split(':', 2);
+            webProxy.Credentials = new NetworkCredential(
+                Uri.UnescapeDataString(parts[0]),
+                parts.Length > 1 ? Uri.UnescapeDataString(parts[1]) : string.Empty);
+        }
+
+        return webProxy;
     }
 }
