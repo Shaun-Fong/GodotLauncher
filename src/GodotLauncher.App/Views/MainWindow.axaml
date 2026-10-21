@@ -35,10 +35,7 @@
           <Border Width="38" Height="38" CornerRadius="10" ClipToBounds="True">
             <Image Source="avares://GodotLauncher/Assets/app.png" Stretch="UniformToFill" />
           </Border>
-          <StackPanel VerticalAlignment="Center" Spacing="1">
-            <TextBlock Text="{Binding AppName}" FontSize="14" FontWeight="SemiBold" />
-            <TextBlock Classes="caption" Text="{Binding Tagline}" />
-          </StackPanel>
+          <TextBlock Text="{Binding AppName}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
         </StackPanel>
 
         <StackPanel DockPanel.Dock="Bottom" Spacing="10">

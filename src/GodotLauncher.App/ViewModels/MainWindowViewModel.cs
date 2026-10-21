@@ -67,7 +67,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     public string VersionText => $"v{AppServices.AppVersion}";
 
     [ObservableProperty]
-    private ShellPage _page = ShellPage.Explore;
+    private ShellPage _page = ShellPage.Projects;
 
     [ObservableProperty]
     private string _statusText = string.Empty;

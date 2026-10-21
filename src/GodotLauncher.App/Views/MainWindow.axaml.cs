@@ -45,6 +45,10 @@ public partial class MainWindow : Window
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Closing += OnClosing;
         Opened += OnOpened;
+
+        // The initial page is rendered before the first PropertyChanged event,
+        // so its view has to be created here.
+        EnsurePageView();
     }
 
     /// <summary>Connects the tray icon so the window can hide instead of closing.</summary>
