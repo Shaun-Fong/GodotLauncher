@@ -38,7 +38,20 @@ public sealed class InstallationLibrary
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            _items = [.. loaded];
+            var items = loaded.ToList();
+
+            // Older libraries could be saved without a default editor; promote
+            // the most recent one so launching from the tray stays predictable.
+            if (items.Count > 0 && !items.Any(i => i.IsDefault))
+            {
+                var best = items
+                    .OrderByDescending(i => i.LastLaunched ?? DateTimeOffset.MinValue)
+                    .ThenBy(i => i.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .First();
+                items[items.IndexOf(best)] = best with { IsDefault = true };
+            }
+
+            _items = [.. items];
         }
         finally
         {
@@ -55,13 +68,33 @@ public sealed class InstallationLibrary
         await MutateAsync(list =>
         {
             var index = list.FindIndex(i => string.Equals(i.Id, installation.Id, StringComparison.OrdinalIgnoreCase));
+            var record = installation;
+
+            // The first editor that lands in the library becomes the default,
+            // so the tray "launch default" action works out of the box.
+            if (!record.IsDefault && !list.Any(i => i.IsDefault))
+            {
+                record = record with { IsDefault = true };
+            }
+
+            if (record.IsDefault)
+            {
+                for (var i = 0; i < list.Count; i++)
+                {
+                    if (i != index && list[i].IsDefault)
+                    {
+                        list[i] = list[i] with { IsDefault = false };
+                    }
+                }
+            }
+
             if (index >= 0)
             {
-                list[index] = installation;
+                list[index] = record;
             }
             else
             {
-                list.Add(installation);
+                list.Add(record);
             }
 
             return true;
