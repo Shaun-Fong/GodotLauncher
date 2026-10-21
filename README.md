@@ -38,8 +38,19 @@ from GitHub Actions.
   `src/GodotLauncher.App/Localization`.
 - **Portable settings** — human-editable TOML configuration, atomic writes, corrupt files backed up
   instead of crashing.
+- **Project library** — every Godot project you open is remembered with the editor that launched it.
+  Create a project from a folder picker, import an existing `project.godot`, pick the engine version per
+  project in a dropdown, and open it with one click. A row warns when the engine version a project asks
+  for is not installed.
+- **Network options** — follow the system proxy, connect directly, or point the launcher at a custom
+  HTTP proxy. Catalog refreshes, downloads and update checks use the same setting, and a failed refresh
+  shows a non-blocking hint with a shortcut to the network settings.
+- **Update checks** — the settings page asks GitHub for the latest launcher release and downloads the
+  archive that matches the current platform.
 
 ![Explore page in the light theme](docs/images/explore-light.png)
+
+![Projects page in the dark theme](docs/images/projects.png)
 
 ## Download
 

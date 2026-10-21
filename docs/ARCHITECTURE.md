@@ -139,3 +139,40 @@ sorting, slug resolution, the downloader (resume, retry, fallback, checksum mism
 and zip-slip rejection, executable discovery, installation and the registry, library persistence and
 preview cleanup, TOML parsing and corrupt-file recovery, launching, and the rolling log. The suite runs
 on Windows and Linux in CI.
+
+## Projects
+
+Projects are plain `project.godot` files. `GodotProjectFile` reads the INI subset Godot writes
+(`config_version`, `application/config/name`, `run/main_scene`, `config/features`) and derives the engine
+version from the first feature entry, falling back to the major version implied by `config_version`.
+
+`ProjectStore` keeps `projects.json` next to `installed.json`:
+
+```json
+{ "schemaVersion": 1, "projects": [ { "path": "C:/games/demo", "name": "Demo", "versionText": "4.8", "editorId": "4.8-beta1|standard|x64" } ] }
+```
+
+The list is sorted by last opened time. `AppServices.FindEditorForProject` resolves the editor in three
+steps: the explicitly selected `editorId`, then the newest installed editor with the same major/minor
+version (stable preferred), then the default editor when the project version is unknown. A parsed version
+with no match leaves the row without an editor so the UI can warn instead of silently picking something
+else.
+
+Opening a project calls `EditorLauncher.LaunchProject`, which builds arguments in this order: `--path
+<project> --editor`, the installation's launch preset, then the user arguments of the row. The editor is
+still started detached, exactly like a plain launch.
+
+## Network and updates
+
+`ProxySupport.CreateClient` builds every `HttpClient` from `LauncherSettings.Proxy` (`System`, `None`,
+`Custom` plus `ProxyUrl`) using `SocketsHttpHandler`. Changing the proxy in settings recreates the catalog
+client, the download client and the update checker, because HTTP clients and their connection pools are
+immutable once used.
+
+Network failures never open a modal dialog. `AppServices.NetworkIssue` holds the last failure message and
+the shell renders it as a thin banner above the page with a button that jumps to the network settings.
+
+`UpdateChecker` calls `GET /repos/Shaun-Fong/GodotLauncher/releases/latest` and compares the tag with the
+running assembly version. A `404` means "no published release" and is treated as up to date. The settings
+page downloads the asset that matches the platform (`win-x64`, `linux-x64`, `osx-arm64`, `osx-x64`) into
+the downloads folder; replacing the installed files stays a manual step for now.

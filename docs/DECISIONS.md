@@ -140,3 +140,33 @@ limitation instead of being faked.
   this version.
 - macOS and Linux binaries are built by CI but were only run on Windows during development; tray
   behaviour and path handling on those platforms need a smoke test.
+
+## Projects live in their own file
+
+`projects.json` is separate from `installed.json`: a project references an editor, it is not part of the
+installation record. Keeping them apart means uninstalling an editor never deletes project entries, and a
+corrupt project list cannot break the editor library. Only the path, display name, detected version and
+chosen editor are stored; everything else is re-read from `project.godot` when the list is shown or
+refreshed.
+
+## Editor selection is explicit, then version-based, then default
+
+Opening a project first honours the editor the user picked for that row. Otherwise the launcher picks the
+newest editor with the same major/minor version, preferring stable builds over previews. If the project
+declares a version that is not installed, no editor is selected and the row shows a warning instead of
+silently launching a different engine version. Only projects without a readable version fall back to the
+default editor.
+
+## Proxy handling rebuilds HTTP clients
+
+`HttpClient` instances cannot change their proxy after the first request, so changing the proxy mode
+disposes the catalog and download clients and creates new ones. `SocketsHttpHandler` is configured
+explicitly instead of relying on `HttpClient.DefaultProxy`, which keeps behaviour identical on Windows,
+Linux and macOS and makes "direct connection" actually bypass a system proxy.
+
+## Update checks use the latest release endpoint
+
+The launcher compares its assembly version with the tag of `releases/latest`. A `404` is treated as "no
+release published" rather than an error, which keeps forks and private repositories quiet. Assets are
+picked by platform token; downloading an update copies the archive into the downloads folder and leaves
+replacing the running executable to the user, because the launcher cannot overwrite itself on Windows.
