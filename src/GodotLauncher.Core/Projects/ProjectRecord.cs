@@ -35,6 +35,7 @@ public sealed record ProjectRecord
     public DateTimeOffset? LastOpened { get; init; }
 
     /// <summary>True when the project file still exists on disk.</summary>
+    [JsonIgnore]
     public bool Exists => File.Exists(System.IO.Path.Combine(Path, GodotProjectFile.FileName));
 
     /// <summary>True when the recorded version is a complete major.minor pair.</summary>
