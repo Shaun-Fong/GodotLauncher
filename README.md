@@ -1,19 +1,14 @@
+# Godot Launcher
+
 <p align="center">
-  <a href="README.md">ENGLISH</a> | <a href="README.zh-CN.md">中文</a>
+  ENGLISH | <a href="README.zh-CN.md">中文</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml"><img src="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml/badge.svg" alt="build" /></a>
 </p>
 
-# Godot Launcher
-
 A fast, small desktop launcher for [Godot Engine](https://godotengine.org/) on Windows, Linux and macOS.
-It lists every published Godot release, downloads and installs editors side by side, and launches them
-without a terminal window flashing on screen.
-
-Built with C#, .NET 10 and Avalonia 11. Single-file builds are published for Windows, Linux and macOS
-from GitHub Actions.
 
 ![Projects page in the dark theme](docs/images/projects.png)
 
@@ -120,7 +115,7 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 
 ## Status
 
-Version 0.2.1 is the current release. Implemented: release catalog, downloads and installation,
+Version 0.3.0 is the current release. Implemented: release catalog, downloads and installation,
 launching, project library, installed editor management, tray, themes, localization, settings, proxy
 support, launcher self-update, single instance and optional autostart.
 

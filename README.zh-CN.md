@@ -1,17 +1,14 @@
+# Godot 启动器
+
 <p align="center">
-  <a href="README.md">ENGLISH</a> | <a href="README.zh-CN.md">中文</a>
+  <a href="README.md">ENGLISH</a> | 中文
 </p>
 
 <p align="center">
   <a href="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml"><img src="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml/badge.svg" alt="build" /></a>
 </p>
 
-# Godot 启动器
-
 一个面向 Windows、Linux 和 macOS 的轻量、快速的 [Godot Engine](https://godotengine.org/) 桌面启动器。
-它列出所有已发布的 Godot 版本，并排安装多个编辑器，启动时不会闪出黑色终端窗口。
-
-使用 C#、.NET 10 和 Avalonia 11 构建，GitHub Actions 会发布 Windows、Linux、macOS 的单文件版本。
 
 ![项目页（深色主题）](docs/images/projects.png)
 
@@ -106,7 +103,7 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 
 ## 当前状态
 
-当前版本为 0.2.1。已实现：版本目录、下载与安装、启动编辑器、项目库、已安装管理、托盘、主题、
+当前版本为 0.3.0。已实现：版本目录、下载与安装、启动编辑器、项目库、已安装管理、托盘、主题、
 多语言、设置、代理支持、启动器自更新、单实例和可选开机自启。
 
 已知差距记录在 [docs/DECISIONS.md](docs/DECISIONS.md#known-gaps)，包括冷启动约 0.9 秒（目标是 300 毫秒），
