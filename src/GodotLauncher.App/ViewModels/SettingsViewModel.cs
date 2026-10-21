@@ -113,6 +113,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public string LicenseText => L.Settings.License;
 
+    public string RepositoryUrl => "https://github.com/Shaun-Fong/GodotLauncher";
+
     public bool AutostartSupported => AutostartService.IsSupported;
 
     protected override void OnLanguageChanged()
@@ -407,6 +409,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     [RelayCommand]
     private void OpenLogs() => Services.OpenExternally(Services.Paths.LogDirectory);
+
+    [RelayCommand]
+    private void OpenRepository() => Services.OpenExternally(RepositoryUrl);
 
     private void BuildOptions()
     {

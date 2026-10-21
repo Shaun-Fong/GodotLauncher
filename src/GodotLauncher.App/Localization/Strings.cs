@@ -373,6 +373,10 @@ public sealed class SettingsStrings(IReadOnlyDictionary<string, string> values) 
 
     public string License => Get(nameof(License));
 
+    public string Repository => Get(nameof(Repository));
+
+    public string CheckNow => Get(nameof(CheckNow));
+
     public string Saved => Get(nameof(Saved));
 
     public string FolderPicker => Get(nameof(FolderPicker));

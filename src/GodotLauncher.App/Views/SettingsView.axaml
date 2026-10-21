@@ -128,7 +128,7 @@
             <TextBlock Grid.Column="1" Classes="caption" Text="{Binding UpdateStatus}" VerticalAlignment="Center"
                        Margin="0,0,10,0" TextWrapping="Wrap" />
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-              <Button Classes="ghost" Content="{Binding Text.Settings.CheckUpdates}"
+              <Button Classes="ghost" Content="{Binding Text.Settings.CheckNow}"
                       Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !IsCheckingUpdates}" />
               <Button Classes="primary" Content="{Binding Text.Settings.DownloadUpdate}"
                       Command="{Binding DownloadUpdateCommand}" IsVisible="{Binding HasUpdate}" />
@@ -144,6 +144,13 @@
           <Grid ColumnDefinitions="200,*">
             <TextBlock Text="{Binding Text.Settings.Logs}" VerticalAlignment="Center" />
             <Button Grid.Column="1" Classes="ghost" HorizontalAlignment="Left" Content="{Binding Text.Settings.Open}" Command="{Binding OpenLogsCommand}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*,Auto">
+            <TextBlock Text="{Binding Text.Settings.Repository}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Classes="caption" Text="{Binding RepositoryUrl}" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
+            <Button Grid.Column="2" Classes="ghost" Content="{Binding Text.Settings.Open}"
+                    Command="{Binding OpenRepositoryCommand}" />
           </Grid>
           <TextBlock Classes="caption" Text="{Binding LicenseText}" />
         </StackPanel>

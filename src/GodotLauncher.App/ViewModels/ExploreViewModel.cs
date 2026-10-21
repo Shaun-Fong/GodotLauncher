@@ -355,7 +355,18 @@ public sealed partial class ExploreViewModel : ViewModelBase
             CultureInfo.CurrentCulture,
             L.Explore.Updated,
             catalog.FetchedAt.LocalDateTime.ToString("g", CultureInfo.CurrentCulture));
-        StatusText = catalog.IsFromCache ? L.Explore.Cached : L.Status.UpToDate;
+        if (catalog.IsFromCache)
+        {
+            StatusText = L.Explore.Cached;
+        }
+        else if (Services.NewVersionIds.Count > 0)
+        {
+            StatusText = string.Format(CultureInfo.CurrentCulture, L.Status.NewVersions, Services.NewVersionIds.Count);
+        }
+        else
+        {
+            StatusText = L.Status.UpToDate;
+        }
     }
 
     private void RefreshCardStates()
