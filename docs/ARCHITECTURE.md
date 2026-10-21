@@ -181,4 +181,5 @@ install folder for write access, writes a temporary `apply.cmd` (or `apply.sh`),
 The script waits for the launcher process to exit, unpacks the archive, copies the files over the install
 directory, starts the launcher again and removes the temporary folder and the archive. The About panel
 shows `Download update` while an update is available and `Restart and install` once the archive is on
-disk.
+disk. The anonymous GitHub API allows 60 requests per hour per address; a 403/429 rate limit is logged
+and reported as a failed check, not as a network problem in the banner.

@@ -369,6 +369,13 @@ public sealed class AppServices : INotifyPropertyChanged
             SetNetworkIssue(null);
             return release;
         }
+        catch (Exception ex) when (IsRateLimited(ex))
+        {
+            // The anonymous GitHub API allows 60 requests per hour per address. A shared address can
+            // exhaust that budget, so this is not reported as a network problem the user has to fix.
+            Log.Warn("GitHub rate limit reached while checking for updates.");
+            throw;
+        }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
             Log.Warn($"Update check failed: {ex.Message}");
@@ -381,6 +388,12 @@ public sealed class AppServices : INotifyPropertyChanged
             RaiseOnUiThread(() => OnPropertyChanged(nameof(IsCheckingUpdates)));
         }
     }
+
+    private static bool IsRateLimited(Exception exception) =>
+        exception is HttpRequestException
+        {
+            StatusCode: HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests,
+        };
 
     /// <summary>Downloads a release asset into the downloads folder.</summary>
     public async Task<string> DownloadUpdateAsync(
