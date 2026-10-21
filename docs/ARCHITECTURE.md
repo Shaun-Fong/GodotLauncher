@@ -107,7 +107,8 @@ quit. `last_launched` is written asynchronously.
 ## Shell
 
 - `MainWindowViewModel` owns navigation, the status/banner line, counts, the downloads drawer and the
-  dialog host. Pages are view models created once; their views are created on first navigation.
+  dialog host. Pages are view models created once; their views are created on first navigation. The
+  banner only appears for release channels whose notification setting is enabled.
 - `DownloadManager` runs at most `concurrent_downloads` jobs (1–4, default 2) from a FIFO queue. Items
   are deduplicated per version/edition/architecture and survive cancellation and retry.
 - `TrayService` builds a native tray menu (show, launch default, recent five, refresh, settings, exit)

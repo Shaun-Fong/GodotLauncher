@@ -15,7 +15,8 @@ from GitHub Actions.
 
 - **Complete release catalog** — stable, RC, beta and dev builds of Godot 4.x, plus 3.x stable. The list
   is cached on disk, rendered before any network call and refreshed in the background every six hours.
-  New releases are highlighted with a `NEW` badge.
+  New releases are highlighted with a `NEW` badge, and an in-app banner announces them when the matching
+  notification channel is enabled.
 - **Offline first** — the cached catalog and the installed editor list are shown immediately, even with
   no network access. Conditional requests (`ETag`/`If-None-Match`) keep refreshes cheap, and a
   truncated upstream catalog is rejected instead of replacing a good cache.
