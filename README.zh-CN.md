@@ -1,7 +1,7 @@
 ![项目页（深色主题）](docs/images/projects.png)
 
 <p align="center">
-  ENGLISH | <a href="README.zh-CN.md">中文</a>
+  <a href="README.md">ENGLISH</a> | 中文
 </p>
 
 <p align="center">
