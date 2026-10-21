@@ -19,6 +19,16 @@
     <KeyBinding Gesture="Ctrl+O" Command="{Binding ToggleDownloadsCommand}" />
   </Window.KeyBindings>
 
+  <Window.Styles>
+    <!-- Keep page content clear of the downloads drawer instead of letting it cover actions. -->
+    <Style Selector="Grid#PageHost">
+      <Setter Property="Margin" Value="24,18,24,20" />
+    </Style>
+    <Style Selector="Grid#PageHost.drawer-open">
+      <Setter Property="Margin" Value="24,18,416,20" />
+    </Style>
+  </Window.Styles>
+
   <Grid RowDefinitions="42,*">
     <!-- Window chrome -->
     <Grid Grid.Row="0" x:Name="TitleBar" ColumnDefinitions="Auto,*,Auto" Background="Transparent"
@@ -113,7 +123,7 @@
             </Grid>
           </Border>
 
-          <Grid Grid.Row="1" Margin="24,18,24,20">
+          <Grid x:Name="PageHost" Grid.Row="1" Classes.drawer-open="{Binding IsDownloadsOpen}">
             <Panel IsVisible="{Binding IsExploreSelected}">
               <views:ExploreView DataContext="{Binding Explore}" />
             </Panel>

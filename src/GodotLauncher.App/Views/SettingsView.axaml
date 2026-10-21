@@ -7,7 +7,7 @@
     <StackPanel Spacing="14" MaxWidth="800" HorizontalAlignment="Left">
       <StackPanel Spacing="3" Margin="0,0,0,4">
         <TextBlock Classes="h1" Text="{Binding Text.Settings.Title}" />
-        <TextBlock Classes="body" Text="{Binding Text.Settings.Subtitle}" />
+        <TextBlock Classes="body" Text="{Binding Text.Settings.Subtitle}"  TextWrapping="Wrap" />
       </StackPanel>
 
       <Border Classes="panel" Padding="18">
