@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using GodotLauncher.App.Mvvm;
 using GodotLauncher.App.Services;
 using GodotLauncher.App.ViewModels;
 using GodotLauncher.Core.Settings;
@@ -37,6 +38,10 @@ public partial class MainWindow : Window
         _benchmark = benchmark;
 
         InitializeComponent();
+
+        // File and folder pickers need a TopLevel; without it every picker returns
+        // null and the import/create buttons look dead.
+        FilePickers.Host = this;
 
         Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://GodotLauncher/Assets/app.png")));
         DataContext = viewModel;

@@ -101,7 +101,14 @@ public sealed partial class ProjectsViewModel : ViewModelBase
     [RelayCommand]
     private async Task ImportAsync()
     {
-        var directory = await FilePickers.PickFolderAsync(L.Projects.ImportTitle);
+        var picked = await FilePickers.PickProjectFileAsync(L.Projects.ImportTitle);
+        if (string.IsNullOrWhiteSpace(picked))
+        {
+            return;
+        }
+
+        // The picker returns project.godot itself; the store keys projects by folder.
+        var directory = Directory.Exists(picked) ? picked : Path.GetDirectoryName(picked);
         if (string.IsNullOrWhiteSpace(directory))
         {
             return;

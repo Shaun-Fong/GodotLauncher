@@ -156,6 +156,24 @@ public static class FilePickers
         return files.Count > 0 ? files[0].TryGetLocalPath() : null;
     }
 
+    public static async Task<string?> PickProjectFileAsync(string title)
+    {
+        var storage = Host?.StorageProvider;
+        if (storage is null)
+        {
+            return null;
+        }
+
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false,
+            FileTypeFilter = [new FilePickerFileType("Godot project") { Patterns = ["project.godot"] }]
+        });
+
+        return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+    }
+
     public static async Task<string?> PickFolderAsync(string title)
     {
         var storage = Host?.StorageProvider;
