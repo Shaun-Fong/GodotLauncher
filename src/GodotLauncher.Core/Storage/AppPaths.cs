@@ -24,6 +24,9 @@ public sealed record AppPaths
     /// <summary>Path of <c>installed.json</c>.</summary>
     public string InstalledFile => Path.Combine(DataDirectory, "installed.json");
 
+    /// <summary>Path of <c>projects.json</c>.</summary>
+    public string ProjectsFile => Path.Combine(DataDirectory, "projects.json");
+
     /// <summary>Path of <c>catalog-cache.json</c>.</summary>
     public string CatalogCacheFile => Path.Combine(DataDirectory, "catalog-cache.json");
 

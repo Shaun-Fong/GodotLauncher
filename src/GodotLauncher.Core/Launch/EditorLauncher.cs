@@ -14,6 +14,9 @@ public sealed record LaunchOptions
 
     /// <summary>Working directory; defaults to the installation directory.</summary>
     public string? WorkingDirectory { get; init; }
+
+    /// <summary>Project directory to open in the editor instead of the project manager.</summary>
+    public string? ProjectPath { get; init; }
 }
 
 /// <summary>Details of a started editor process.</summary>
@@ -76,11 +79,7 @@ public sealed class EditorLauncher
             }
         }
 
-        var arguments = new List<string>(options.Arguments);
-        if (!string.IsNullOrWhiteSpace(installation.LaunchArguments))
-        {
-            arguments.InsertRange(0, SplitArguments(installation.LaunchArguments));
-        }
+        var arguments = BuildArguments(installation.LaunchArguments, options);
 
         try
         {
@@ -103,6 +102,31 @@ public sealed class EditorLauncher
         {
             throw new LaunchException($"The editor could not be started: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Starts the editor with a project directory so it opens that project directly.
+    /// </summary>
+    public LaunchResult LaunchProject(InstalledVersion installation, string projectPath, LaunchOptions? options = null) =>
+        Launch(installation, (options ?? new LaunchOptions()) with { ProjectPath = projectPath });
+
+    /// <summary>Builds the editor argument list for the installation and options.</summary>
+    public static IReadOnlyList<string> BuildArguments(string? installationArguments, LaunchOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var arguments = new List<string>(options.Arguments);
+        if (!string.IsNullOrWhiteSpace(installationArguments))
+        {
+            arguments.InsertRange(0, SplitArguments(installationArguments));
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.ProjectPath))
+        {
+            arguments.InsertRange(0, ["--path", options.ProjectPath, "--editor"]);
+        }
+
+        return arguments;
     }
 
     /// <summary>
