@@ -1,5 +1,7 @@
 # Godot Launcher
 
+[![build](https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml/badge.svg)](https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml)
+
 A fast, small desktop launcher for [Godot Engine](https://godotengine.org/) on Windows, Linux and macOS.
 It lists every published Godot release, downloads and installs editors side by side, and launches them
 without a terminal window flashing on screen.
@@ -74,7 +76,8 @@ Produce a self-contained single-file build:
 ```bash
 dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
   -c Release -r win-x64 --self-contained true \
-  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true \
+  -p:PublishReadyToRun=true
 ```
 
 ## Command line
@@ -105,7 +108,7 @@ themes, localization, settings, single instance and optional autostart. Not impl
 lists, export template management UI, launcher self-update, custom themes, and a command palette.
 
 Known gaps are tracked in [docs/DECISIONS.md](docs/DECISIONS.md#known-gaps), including cold start
-(~1.0 s instead of the 300 ms target) and checksum verification, which currently only happens when the
+(~0.9 s instead of the 300 ms target) and checksum verification, which currently only happens when the
 publisher digest is known.
 
 ## Documentation

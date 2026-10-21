@@ -87,7 +87,7 @@ jobs:
           -p:Version=${{ steps.version.outputs.version }}
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:EnableCompressionInSingleFile=true
+          -p:PublishReadyToRun=true
           -p:DebugType=embedded
           --output artifacts/${{ matrix.rid }}
 

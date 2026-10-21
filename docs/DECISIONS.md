@@ -98,21 +98,25 @@ key structure, which keeps refactoring safe and missing keys visible.
 
 ## Startup: what was measured and what remains
 
-Release build, framework-dependent, ReadyToRun, on Windows 11:
+Release build, self-contained single-file, ReadyToRun, on Windows 11 (three runs):
 
 | Phase | Time |
 | --- | --- |
-| Services (settings, HTTP, caches) | ~42 ms |
+| Services (settings, HTTP, caches) | ~40 ms |
 | Cached catalog read | ~100 ms |
-| Installation library read | ~128 ms |
-| Window construction | ~520 ms |
-| Platform window, theme and first render | ~540 ms |
-| **First frame** | **~1065 ms** |
+| Installation library read | ~133 ms |
+| Window construction | ~454 ms |
+| Platform window, theme and first render | ~290 ms |
+| **First frame** | **873–939 ms** |
+
+Comparison runs on the same machine: framework-dependent ReadyToRun 1065 ms, self-contained folder
+ReadyToRun 1045 ms, and compressed single-file 1715 ms. The published build is therefore uncompressed
+single-file ReadyToRun: it starts fastest and the zip/tar.gz archives still shrink it to about 50 MB.
 
 Applied: the tray icon is created after the first frame (constructing `TrayIcon` alone cost ~580 ms);
 secondary pages and Explore cards are created on demand; the catalog and library are read in parallel
 with UI construction on worker threads. Tried without measurable gain: DirectComposition composition
-modes, and disabling extended client area.
+modes, disabling extended client area, and single-file compression (much worse).
 
 Remaining gap to the 300 ms target is dominated by Avalonia's platform initialization and theme
 application. Options for a future release: publish with NativeAOT, trim Fluent theme resources, or move
@@ -121,16 +125,16 @@ than silently relaxing the target.
 
 ## Packaging and distribution
 
-GitHub Actions publishes self-contained single-file archives for `win-x64`, `linux-x64`, `osx-x64` and
-`osx-arm64` (`build.yml` on every push, `release.yml` on `v*` tags with `SHA256SUMS.txt` and generated
-release notes). Self-contained is the default because a launcher that requires a .NET runtime install
-fails the "just works" requirement. The archives are not code signed yet; signing certificates are a
-release-engineering task that needs accounts and secrets, so it is listed as a known limitation instead
-of being faked.
+GitHub Actions publishes self-contained single-file ReadyToRun archives for `win-x64`, `linux-x64`,
+`osx-x64` and `osx-arm64` (`build.yml` on every push, `release.yml` on `v*` tags with `SHA256SUMS.txt`
+and generated release notes). Self-contained is the default because a launcher that requires a .NET
+runtime install fails the "just works" requirement. The archives are not code signed yet; signing
+certificates are a release-engineering task that needs accounts and secrets, so it is listed as a known
+limitation instead of being faked.
 
 ## Known gaps
 
-- Cold start ~1.0 s, target 300 ms (see above).
+- Cold start ~0.9 s, target 300 ms (see above).
 - SHA-256 verification only when a publisher digest is known; otherwise size-only verification.
 - No automatic launcher self-update, project list, export-template management UI or command palette in
   this version.
