@@ -12,7 +12,8 @@
     <Company>GodotLauncher</Company>
     <Copyright>MIT Licensed</Copyright>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/GodotLauncher/GodotLauncher</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Shaun-Fong/GodotLauncher</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Shaun-Fong/GodotLauncher</PackageProjectUrl>
 
     <!-- Keep build output tidy and reproducible. -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
