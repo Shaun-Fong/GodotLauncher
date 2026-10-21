@@ -1,6 +1,12 @@
-# Godot Launcher
+<p align="center">
+  <a href="README.md">ENGLISH</a> | <a href="README.zh-CN.md">中文</a>
+</p>
 
-[![build](https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml/badge.svg)](https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml)
+<p align="center">
+  <a href="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml"><img src="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml/badge.svg" alt="build" /></a>
+</p>
+
+# Godot Launcher
 
 A fast, small desktop launcher for [Godot Engine](https://godotengine.org/) on Windows, Linux and macOS.
 It lists every published Godot release, downloads and installs editors side by side, and launches them
@@ -9,10 +15,14 @@ without a terminal window flashing on screen.
 Built with C#, .NET 10 and Avalonia 11. Single-file builds are published for Windows, Linux and macOS
 from GitHub Actions.
 
-![Versions page in the dark theme](docs/images/explore-dark.png)
+![Projects page in the dark theme](docs/images/projects.png)
 
 ## Features
 
+- **Project library** — every Godot project you open is remembered with the editor that launched it.
+  Create a project from a folder picker, import an existing `project.godot`, pick the engine version per
+  project in a dropdown, and open it with one click. A row warns when the engine version a project asks
+  for is not installed.
 - **Complete release catalog** — stable, RC, beta and dev builds of Godot 4.x, plus 3.x stable. The list
   is cached on disk, rendered before any network call and refreshed in the background every six hours.
   New releases are highlighted with a `NEW` badge, and an in-app banner announces them when the matching
@@ -36,23 +46,15 @@ from GitHub Actions.
 - **Themes and localization** — light, dark or system theme with no white flash on startup; English and
   Simplified Chinese out of the box. Adding a language means dropping one JSON file into
   `src/GodotLauncher.App/Localization`.
-- **Portable settings** — human-editable TOML configuration, atomic writes, corrupt files backed up
-  instead of crashing.
-- **Project library** — every Godot project you open is remembered with the editor that launched it.
-  Create a project from a folder picker, import an existing `project.godot`, pick the engine version per
-  project in a dropdown, and open it with one click. A row warns when the engine version a project asks
-  for is not installed.
 - **Network options** — follow the system proxy, connect directly, or point the launcher at a custom
   HTTP proxy. Catalog refreshes, downloads and update checks use the same setting, and a failed refresh
   shows a non-blocking hint with a shortcut to the network settings.
-- **Update checks** — the settings page asks GitHub for the latest launcher release and downloads the
-  archive that matches the current platform.
+- **Launcher updates** — the launcher checks GitHub releases, downloads the archive that matches the
+  current platform, and restarts itself to install the new version.
+- **Portable settings** — human-editable TOML configuration, atomic writes, corrupt files backed up
+  instead of crashing.
 
 ![Versions page in the light theme](docs/images/explore-light.png)
-
-![Notification banner and the NEW badge](docs/images/notifications.png)
-
-![Projects page in the dark theme](docs/images/projects.png)
 
 ## Download
 
@@ -110,6 +112,7 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 | `$XDG_DATA_HOME/GodotLauncher` (Linux) | Data directory |
 | `config.toml` | Settings, created on first save |
 | `installed.json` | Installation registry |
+| `projects.json` | Project library |
 | `catalog-cache.json` | Last known release catalog |
 | `logs/launcher.log` | Rolling log, 2 MB × 3 files |
 | `editors/<std\|mono>/<version-id>/` | Installed editors (configurable) |
@@ -117,9 +120,9 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 
 ## Status
 
-Version 0.1.0 is the first release. Implemented: catalog, downloads, installation, launching, tray,
-themes, localization, settings, single instance and optional autostart. Not implemented yet: project
-lists, export template management UI, launcher self-update, custom themes, and a command palette.
+Version 0.2.1 is the current release. Implemented: release catalog, downloads and installation,
+launching, project library, installed editor management, tray, themes, localization, settings, proxy
+support, launcher self-update, single instance and optional autostart.
 
 Known gaps are tracked in [docs/DECISIONS.md](docs/DECISIONS.md#known-gaps), including cold start
 (~0.9 s instead of the 300 ms target) and checksum verification, which currently only happens when the

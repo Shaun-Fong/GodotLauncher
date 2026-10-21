@@ -136,8 +136,8 @@ limitation instead of being faked.
 
 - Cold start ~0.9 s, target 300 ms (see above).
 - SHA-256 verification only when a publisher digest is known; otherwise size-only verification.
-- No automatic launcher self-update, project list, export-template management UI or command palette in
-  this version.
+- Launcher updates are explicit: the launcher checks GitHub in the background, but downloading and
+  restarting is a user action. Fully silent self-updates are not attempted.
 - macOS and Linux binaries are built by CI but were only run on Windows during development; tray
   behaviour and path handling on those platforms need a smoke test.
 
@@ -157,6 +157,16 @@ declares a version that is not installed, no editor is selected and the row show
 silently launching a different engine version. Only projects without a readable version fall back to the
 default editor.
 
+## Launcher updates replace files after exit
+
+A running executable cannot overwrite itself on Windows, so an update is applied by a small script
+(UpdateInstaller in the app project) that is started detached in a temporary folder. The script waits
+for the launcher process id to disappear, unpacks the downloaded archive (Expand-Archive on Windows,
+	ar -xf elsewhere), copies the files over the install directory, starts the launcher again and deletes
+the temporary folder and the archive. The About section shows the check result, downloads the asset that
+matches the host platform (win-x64, osx-arm64, ...), then offers "Restart and install". The install
+folder is probed for write access first: on a read-only location the launcher reports the problem instead
+of leaving a half-replaced directory. Updates are opt-in; nothing is downloaded without the user asking.
 ## Proxy handling rebuilds HTTP clients
 
 `HttpClient` instances cannot change their proxy after the first request, so changing the proxy mode

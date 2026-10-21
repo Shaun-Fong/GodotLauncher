@@ -19,7 +19,7 @@ src/
     Services/                composition root, tray, single instance, autostart
     Downloads/               download queue and item view models
     Mvvm/                    base view models and dialog host
-    ViewModels/              explore, installed, settings, shell
+    ViewModels/              projects, explore, installed, settings, shell
     Views/                   XAML views and code-behind
     Styles/                  theme resources and control styles
     Localization/            JSON catalogues and generated string groups
@@ -173,6 +173,12 @@ Network failures never open a modal dialog. `AppServices.NetworkIssue` holds the
 the shell renders it as a thin banner above the page with a button that jumps to the network settings.
 
 `UpdateChecker` calls `GET /repos/Shaun-Fong/GodotLauncher/releases/latest` and compares the tag with the
-running assembly version. A `404` means "no published release" and is treated as up to date. The settings
-page downloads the asset that matches the platform (`win-x64`, `linux-x64`, `osx-arm64`, `osx-x64`) into
-the downloads folder; replacing the installed files stays a manual step for now.
+running assembly version. A `404` means "no published release" and is treated as up to date. The app
+checks once in the background at startup and the About panel always offers a manual check.
+
+`UpdateInstaller` applies a downloaded archive without leaving the app in a broken state: it probes the
+install folder for write access, writes a temporary `apply.cmd` (or `apply.sh`), and starts it detached.
+The script waits for the launcher process to exit, unpacks the archive, copies the files over the install
+directory, starts the launcher again and removes the temporary folder and the archive. The About panel
+shows `Download update` while an update is available and `Restart and install` once the archive is on
+disk.
