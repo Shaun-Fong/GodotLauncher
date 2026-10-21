@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GodotLauncher.App.ViewModels"
+             x:Class="GodotLauncher.App.Views.InstalledView"
+             x:DataType="vm:InstalledViewModel">
+  <Grid RowDefinitions="Auto,Auto,*">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="3">
+        <TextBlock Classes="h1" Text="{Binding Text.Installed.Title}" />
+        <TextBlock Classes="body" Text="{Binding Text.Installed.Subtitle}" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <Button Classes="ghost" Command="{Binding CleanPreviewsCommand}">
+          <TextBlock Text="{Binding Text.Installed.CleanPreviews}" FontSize="13" />
+        </Button>
+        <Button Classes="primary" Command="{Binding RegisterCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Path Data="{DynamicResource IconDownload}" Width="14" Height="14" Stretch="Uniform" Fill="White" />
+            <TextBlock Text="{Binding Text.Installed.Register}" Foreground="White" FontSize="13" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Grid>
+
+    <TextBlock Grid.Row="1" Classes="caption" Margin="2,14,0,10" Text="{Binding SummaryText}" />
+
+    <Panel Grid.Row="2">
+      <ListBox ItemsSource="{Binding Items}" IsVisible="{Binding !IsEmpty}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:InstalledItemViewModel">
+            <Border Classes="card hover" Padding="16,13">
+              <StackPanel Spacing="9">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Classes="card-title" Text="{Binding Title}" VerticalAlignment="Center" />
+                      <Border Classes="pill stable" IsVisible="{Binding IsDefault}">
+                        <TextBlock Text="{Binding DefaultText}" Foreground="{DynamicResource ChannelStableBrush}" />
+                      </Border>
+                      <Border Classes="badge" IsVisible="{Binding IsPinned}">
+                        <TextBlock Text="{Binding PinnedText}" />
+                      </Border>
+                    </StackPanel>
+                    <TextBlock Classes="caption" Margin="0,3,0,0" Text="{Binding MetaText}" />
+                  </StackPanel>
+                  <Button Grid.Column="1" Classes="primary" MinWidth="96" VerticalAlignment="Center"
+                          Command="{Binding LaunchCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <Path Data="{DynamicResource IconLaunch}" Width="12" Height="12" Stretch="Uniform" Fill="White" />
+                      <TextBlock Text="{Binding LaunchText}" Foreground="White" FontSize="13" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+
+                <TextBlock Classes="caption" Text="{Binding PathText}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="caption" Text="{Binding LastUsedText}" />
+
+                <WrapPanel>
+                  <Button Classes="ghost" FontSize="12" MinHeight="28" Padding="9,4" Content="{Binding SetDefaultText}"
+                          Command="{Binding SetDefaultCommand}" IsVisible="{Binding !IsDefault}" Margin="0,0,6,6" />
+                  <Button Classes="ghost" FontSize="12" MinHeight="28" Padding="9,4" Content="{Binding PinText}"
+                          Command="{Binding TogglePinCommand}" Margin="0,0,6,6" />
+                  <Button Classes="ghost" FontSize="12" MinHeight="28" Padding="9,4" Content="{Binding RenameText}"
+                          Command="{Binding RenameCommand}" Margin="0,0,6,6" />
+                  <Button Classes="ghost" FontSize="12" MinHeight="28" Padding="9,4" Content="{Binding ArgumentsText}"
+                          Command="{Binding EditArgumentsCommand}" Margin="0,0,6,6" />
+                  <Button Classes="ghost" FontSize="12" MinHeight="28" Padding="9,4" Content="{Binding OpenFolderText}"
+                          Command="{Binding OpenFolderCommand}" Margin="0,0,6,6" />
+                  <Button Classes="danger" FontSize="12" MinHeight="28" Padding="9,4" Content="{Binding UninstallText}"
+                          Command="{Binding UninstallCommand}" Margin="0,0,6,6" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <StackPanel IsVisible="{Binding IsEmpty}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" MaxWidth="400">
+        <TextBlock Classes="h2 center" Text="{Binding Text.Installed.Empty}" />
+        <TextBlock Classes="body center wrap" Text="{Binding Text.Installed.EmptyHint}" />
+      </StackPanel>
+    </Panel>
+  </Grid>
+</UserControl>

@@ -1,0 +1,57 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0F1014" />
+      <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#13151A" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#181A21" />
+      <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#1E212A" />
+      <SolidColorBrush x:Key="SurfaceAltBrush" Color="#12141A" />
+      <SolidColorBrush x:Key="BorderBrush" Color="#262A34" />
+      <SolidColorBrush x:Key="BorderStrongBrush" Color="#343A48" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#EDEEF3" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9AA1B2" />
+      <SolidColorBrush x:Key="TextMutedBrush" Color="#6B7280" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#6D5CFF" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#7E6FFF" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#5B4BE8" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#26224A" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#F0616D" />
+      <SolidColorBrush x:Key="SuccessBrush" Color="#3FB950" />
+      <SolidColorBrush x:Key="WarningBrush" Color="#E3A008" />
+      <SolidColorBrush x:Key="ChannelStableBrush" Color="#3FB950" />
+      <SolidColorBrush x:Key="ChannelRcBrush" Color="#58A6FF" />
+      <SolidColorBrush x:Key="ChannelBetaBrush" Color="#F0883E" />
+      <SolidColorBrush x:Key="ChannelDevBrush" Color="#9AA1B2" />
+      <SolidColorBrush x:Key="OverlayBrush" Color="#B3000000" />
+      <SolidColorBrush x:Key="TitleBarButtonHoverBrush" Color="#22FFFFFF" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F5F8" />
+      <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#F1F3F7" />
+      <SolidColorBrush x:Key="SurfaceAltBrush" Color="#EEF0F4" />
+      <SolidColorBrush x:Key="BorderBrush" Color="#E2E5EC" />
+      <SolidColorBrush x:Key="BorderStrongBrush" Color="#D2D7E1" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#16181D" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5B6273" />
+      <SolidColorBrush x:Key="TextMutedBrush" Color="#8A91A0" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#5A49F0" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#6D5CFF" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#4B3CD6" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#ECE9FF" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#D93A47" />
+      <SolidColorBrush x:Key="SuccessBrush" Color="#1F883D" />
+      <SolidColorBrush x:Key="WarningBrush" Color="#BF8700" />
+      <SolidColorBrush x:Key="ChannelStableBrush" Color="#1F883D" />
+      <SolidColorBrush x:Key="ChannelRcBrush" Color="#1F6FEB" />
+      <SolidColorBrush x:Key="ChannelBetaBrush" Color="#BC4C00" />
+      <SolidColorBrush x:Key="ChannelDevBrush" Color="#6E7681" />
+      <SolidColorBrush x:Key="OverlayBrush" Color="#66000000" />
+      <SolidColorBrush x:Key="TitleBarButtonHoverBrush" Color="#14000000" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <FontFamily x:Key="AppFont">Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI, PingFang SC, Noto Sans, sans-serif</FontFamily>
+</ResourceDictionary>

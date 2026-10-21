@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GodotLauncher.App.ViewModels"
+             x:Class="GodotLauncher.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="14" MaxWidth="800" HorizontalAlignment="Left">
+      <StackPanel Spacing="3" Margin="0,0,0,4">
+        <TextBlock Classes="h1" Text="{Binding Text.Settings.Title}" />
+        <TextBlock Classes="body" Text="{Binding Text.Settings.Subtitle}" />
+      </StackPanel>
+
+      <Border Classes="panel" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="section-title" Text="{Binding Text.Settings.Appearance}" />
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.Theme}" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="220" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.Language}" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="220" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="panel" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="section-title" Text="{Binding Text.Settings.Behavior}" />
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.CloseBehavior}" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="220" ItemsSource="{Binding CloseBehaviors}" SelectedItem="{Binding SelectedCloseBehavior}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.AfterLaunch}" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="220" ItemsSource="{Binding AfterLaunchBehaviors}" SelectedItem="{Binding SelectedAfterLaunch}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.LaunchConsole}" VerticalAlignment="Center" TextWrapping="Wrap" />
+            <CheckBox Grid.Column="1" IsChecked="{Binding LaunchWithConsole}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*" IsVisible="{Binding AutostartSupported}">
+            <TextBlock Text="{Binding Text.Settings.Autostart}" VerticalAlignment="Center" />
+            <CheckBox Grid.Column="1" IsChecked="{Binding Autostart}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="panel" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="section-title" Text="{Binding Text.Settings.Downloads}" />
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.InstallRoot}" VerticalAlignment="Center" />
+            <Grid Grid.Column="1" ColumnDefinitions="*,Auto,Auto">
+              <TextBox Text="{Binding InstallRoot}" Watermark="{Binding Text.Settings.InstallRootHint}" />
+              <Button Grid.Column="1" Classes="ghost" Margin="8,0,0,0" Content="{Binding Text.Settings.Browse}" Command="{Binding BrowseInstallRootCommand}" />
+              <Button Grid.Column="2" Margin="6,0,0,0" Content="{Binding Text.Common.Save}" Command="{Binding SaveInstallRootCommand}" />
+            </Grid>
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.Concurrent}" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="120" ItemsSource="{Binding ParallelDownloadOptions}" SelectedItem="{Binding SelectedParallelDownloads}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.Mirror}" VerticalAlignment="Center" />
+            <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
+              <TextBox Text="{Binding MirrorTemplate}" Watermark="{Binding Text.Settings.MirrorHint}" />
+              <Button Grid.Column="1" Margin="6,0,0,0" Content="{Binding Text.Common.Save}" Command="{Binding SaveMirrorTemplateCommand}" />
+            </Grid>
+          </Grid>
+          <TextBlock Classes="caption" Margin="200,0,0,0" TextWrapping="Wrap" Text="{Binding Text.Settings.MirrorHint}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="panel" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="section-title" Text="{Binding Text.Settings.Updates}" />
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.RefreshInterval}" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="200" ItemsSource="{Binding RefreshIntervals}" SelectedItem="{Binding SelectedRefreshInterval}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.ShowOlder}" VerticalAlignment="Center" />
+            <CheckBox Grid.Column="1" IsChecked="{Binding ShowOlderVersions}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="panel" Padding="18">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="section-title" Text="{Binding Text.Settings.Notifications}" />
+          <TextBlock Classes="caption" Text="{Binding Text.Settings.NotificationsHint}" TextWrapping="Wrap" />
+          <WrapPanel>
+            <CheckBox Content="{Binding Text.Channel.Stable}" IsChecked="{Binding NotifyStable}" Margin="0,0,18,0" />
+            <CheckBox Content="{Binding Text.Channel.RC}" IsChecked="{Binding NotifyRc}" Margin="0,0,18,0" />
+            <CheckBox Content="{Binding Text.Channel.Beta}" IsChecked="{Binding NotifyBeta}" Margin="0,0,18,0" />
+            <CheckBox Content="{Binding Text.Channel.Dev}" IsChecked="{Binding NotifyDev}" />
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="panel" Padding="18">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="section-title" Text="{Binding Text.Settings.About}" />
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.Version}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding VersionText}" VerticalAlignment="Center" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.DataFolder}" VerticalAlignment="Center" />
+            <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
+              <TextBlock Text="{Binding DataFolder}" Classes="caption" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+              <Button Grid.Column="1" Classes="ghost" Content="{Binding Text.Settings.Open}" Command="{Binding OpenDataFolderCommand}" />
+            </Grid>
+          </Grid>
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.Logs}" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="ghost" HorizontalAlignment="Left" Content="{Binding Text.Settings.Open}" Command="{Binding OpenLogsCommand}" />
+          </Grid>
+          <TextBlock Classes="caption" Text="{Binding LicenseText}" />
+        </StackPanel>
+      </Border>
+
+      <TextBlock Classes="caption" Margin="2,0,0,10" Text="{Binding SavedText}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
