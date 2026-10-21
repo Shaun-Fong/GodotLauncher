@@ -1,4 +1,4 @@
-# Godot Launcher
+![Projects page in the dark theme](docs/images/projects.png)
 
 <p align="center">
   ENGLISH | <a href="README.zh-CN.md">中文</a>
@@ -8,9 +8,9 @@
   <a href="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml"><img src="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml/badge.svg" alt="build" /></a>
 </p>
 
-A fast, small desktop launcher for [Godot Engine](https://godotengine.org/) on Windows, Linux and macOS.
-
-![Projects page in the dark theme](docs/images/projects.png)
+<p align="center">
+A fast, small desktop launcher for <a href="https://godotengine.org/">Godot Engine</a> on Windows, Linux and macOS.
+</p>
 
 ## Features
 
@@ -48,8 +48,6 @@ A fast, small desktop launcher for [Godot Engine](https://godotengine.org/) on W
   current platform, and restarts itself to install the new version.
 - **Portable settings** — human-editable TOML configuration, atomic writes, corrupt files backed up
   instead of crashing.
-
-![Versions page in the light theme](docs/images/explore-light.png)
 
 ## Download
 

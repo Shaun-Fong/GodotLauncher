@@ -1,16 +1,16 @@
-# Godot 启动器
+![项目页（深色主题）](docs/images/projects.png)
 
 <p align="center">
-  <a href="README.md">ENGLISH</a> | 中文
+  ENGLISH | <a href="README.zh-CN.md">中文</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml"><img src="https://github.com/Shaun-Fong/GodotLauncher/actions/workflows/build.yml/badge.svg" alt="build" /></a>
 </p>
 
-一个面向 Windows、Linux 和 macOS 的轻量、快速的 [Godot Engine](https://godotengine.org/) 桌面启动器。
-
-![项目页（深色主题）](docs/images/projects.png)
+<p align="center">
+一个面向 Windows、Linux 和 macOS 的轻量、快速的 <a href="https://godotengine.org/">Godot Engine</a> 桌面启动器。
+</p>
 
 ## 功能
 
@@ -38,8 +38,6 @@
   同一设置；刷新失败时显示非阻塞提示，并提供跳转到网络设置的入口。
 - **启动器更新** —— 从 GitHub Releases 检查新版本，下载与当前平台匹配的安装包，并重启完成更新。
 - **可编辑配置** —— 人类可读的 TOML 配置、原子写入；配置损坏时会自动备份并重建，而不是崩溃。
-
-![版本页（亮色主题）](docs/images/explore-light.png)
 
 ## 下载
 
