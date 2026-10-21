@@ -100,11 +100,39 @@
       </Border>
 
       <Border Classes="panel" Padding="18">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="section-title" Text="{Binding Text.Settings.Network}" />
+          <TextBlock Classes="caption" Text="{Binding Text.Settings.NetworkHint}" TextWrapping="Wrap" />
+          <Grid ColumnDefinitions="200,*">
+            <TextBlock Text="{Binding Text.Settings.Proxy}" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="220" ItemsSource="{Binding ProxyModes}" SelectedItem="{Binding SelectedProxy}" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*,Auto">
+            <TextBlock Text="{Binding Text.Settings.ProxyUrl}" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" Text="{Binding ProxyUrl}" Watermark="http://127.0.0.1:7890" />
+            <Button Grid.Column="2" Classes="ghost" Margin="8,0,0,0" Content="{Binding Text.Common.Save}" Command="{Binding SaveProxyUrlCommand}" />
+          </Grid>
+          <TextBlock Classes="caption" Margin="200,0,0,0" Text="{Binding Text.Settings.ProxyUrlHint}" TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="panel" Padding="18">
         <StackPanel Spacing="12">
           <TextBlock Classes="section-title" Text="{Binding Text.Settings.About}" />
           <Grid ColumnDefinitions="200,*">
             <TextBlock Text="{Binding Text.Settings.Version}" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Text="{Binding VersionText}" VerticalAlignment="Center" />
+          </Grid>
+          <Grid ColumnDefinitions="200,*,Auto">
+            <TextBlock Text="{Binding Text.Settings.CheckUpdates}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Classes="caption" Text="{Binding UpdateStatus}" VerticalAlignment="Center"
+                       Margin="0,0,10,0" TextWrapping="Wrap" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+              <Button Classes="ghost" Content="{Binding Text.Settings.CheckUpdates}"
+                      Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !IsCheckingUpdates}" />
+              <Button Classes="primary" Content="{Binding Text.Settings.DownloadUpdate}"
+                      Command="{Binding DownloadUpdateCommand}" IsVisible="{Binding HasUpdate}" />
+            </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="200,*">
             <TextBlock Text="{Binding Text.Settings.DataFolder}" VerticalAlignment="Center" />

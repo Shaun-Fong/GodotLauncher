@@ -84,6 +84,14 @@
           </StackPanel>
 
           <StackPanel Spacing="3">
+            <Button Classes="nav" Classes.active="{Binding IsProjectsSelected}" Command="{Binding ShowProjectsCommand}">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Path Data="{DynamicResource IconProject}" Width="15" Height="15" Stretch="Uniform" Fill="{Binding $parent[Button].Foreground}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Margin="10,0,0,0" Text="{Binding Text.Nav.Projects}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="2" Classes="caption" Text="{Binding ProjectsCountText}" VerticalAlignment="Center"
+                           IsVisible="{Binding HasProjectsCount}" />
+              </Grid>
+            </Button>
             <Button Classes="nav" Classes.active="{Binding IsExploreSelected}" Command="{Binding ShowExploreCommand}">
               <StackPanel Orientation="Horizontal" Spacing="10">
                 <Path Data="{DynamicResource IconExplore}" Width="15" Height="15" Stretch="Uniform" Fill="{Binding $parent[Button].Foreground}" VerticalAlignment="Center" />
@@ -110,7 +118,7 @@
 
       <!-- Content -->
       <Grid Grid.Column="1">
-        <Grid RowDefinitions="Auto,*">
+        <Grid RowDefinitions="Auto,Auto,*">
           <Border Grid.Row="0" IsVisible="{Binding IsBannerVisible}" Margin="24,16,24,0" Padding="14,10" CornerRadius="10"
                   Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
@@ -123,7 +131,23 @@
             </Grid>
           </Border>
 
-          <Grid x:Name="PageHost" Grid.Row="1" Classes.drawer-open="{Binding IsDownloadsOpen}">
+          <Border Grid.Row="1" IsVisible="{Binding HasNetworkIssue}" Margin="24,12,24,0" Padding="12,8" CornerRadius="8"
+                  Background="{DynamicResource SurfaceAltBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+              <TextBlock Text="!" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center" />
+              <StackPanel Grid.Column="1" Spacing="1">
+                <TextBlock Text="{Binding NetworkIssueTitle}" FontWeight="SemiBold" FontSize="12" />
+                <TextBlock Classes="caption" Text="{Binding NetworkIssue}" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+              <Button Grid.Column="2" Classes="ghost" FontSize="12" MinHeight="26" Padding="9,3"
+                      Content="{Binding NetworkIssueAction}" Command="{Binding OpenNetworkSettingsCommand}" />
+            </Grid>
+          </Border>
+
+          <Grid x:Name="PageHost" Grid.Row="2" Classes.drawer-open="{Binding IsDownloadsOpen}">
+            <Panel IsVisible="{Binding IsProjectsSelected}">
+              <ContentControl x:Name="ProjectsHost" />
+            </Panel>
             <Panel IsVisible="{Binding IsExploreSelected}">
               <views:ExploreView DataContext="{Binding Explore}" />
             </Panel>

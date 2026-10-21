@@ -58,6 +58,15 @@ public partial class App : Application
             Program.Log.Write(LogLevel.Warning, "Could not load the installation library.", ex);
         }
 
+        try
+        {
+            services.LoadProjectsBlocking();
+        }
+        catch (Exception ex)
+        {
+            Program.Log.Write(LogLevel.Warning, "Could not load the project list.", ex);
+        }
+
         var libraryMs = startup.ElapsedMilliseconds;
         var viewModel = new MainWindowViewModel(services);
         var window = new MainWindow(viewModel, services, Program.Benchmark);

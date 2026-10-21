@@ -21,6 +21,7 @@ public sealed class Strings
         Downloads = new DownloadsStrings(values);
         Installed = new InstalledStrings(values);
         Settings = new SettingsStrings(values);
+        Projects = new ProjectsStrings(values);
         Tray = new TrayStrings(values);
         Dialog = new DialogStrings(values);
         Error = new ErrorStrings(values);
@@ -46,6 +47,8 @@ public sealed class Strings
     public InstalledStrings Installed { get; }
 
     public SettingsStrings Settings { get; }
+
+    public ProjectsStrings Projects { get; }
 
     public TrayStrings Tray { get; }
 
@@ -80,6 +83,8 @@ public sealed class AppStrings(IReadOnlyDictionary<string, string> values) : Str
 
 public sealed class NavStrings(IReadOnlyDictionary<string, string> values) : StringGroup(values, "Nav")
 {
+    public string Projects => Get(nameof(Projects));
+
     public string Explore => Get(nameof(Explore));
 
     public string Installed => Get(nameof(Installed));
@@ -259,6 +264,37 @@ public sealed class InstalledStrings(IReadOnlyDictionary<string, string> values)
 
 public sealed class SettingsStrings(IReadOnlyDictionary<string, string> values) : StringGroup(values, "Settings")
 {
+    public string Network => Get(nameof(Network));
+
+    public string NetworkHint => Get(nameof(NetworkHint));
+
+    public string Proxy => Get(nameof(Proxy));
+
+    public string ProxySystem => Get(nameof(ProxySystem));
+
+    public string ProxyNone => Get(nameof(ProxyNone));
+
+    public string ProxyCustom => Get(nameof(ProxyCustom));
+
+    public string ProxyUrl => Get(nameof(ProxyUrl));
+
+    public string ProxyUrlHint => Get(nameof(ProxyUrlHint));
+
+    public string CheckUpdates => Get(nameof(CheckUpdates));
+
+    public string CheckingUpdates => Get(nameof(CheckingUpdates));
+
+    public string UpToDate => Get(nameof(UpToDate));
+
+    public string UpdateAvailable => Get(nameof(UpdateAvailable));
+
+    public string DownloadUpdate => Get(nameof(DownloadUpdate));
+
+    public string UpdateDownloaded => Get(nameof(UpdateDownloaded));
+
+    public string UpdateCheckFailed => Get(nameof(UpdateCheckFailed));
+
+    public string CurrentVersion => Get(nameof(CurrentVersion));
     public string Title => Get(nameof(Title));
 
     public string Subtitle => Get(nameof(Subtitle));
@@ -430,6 +466,9 @@ public sealed class StatusStrings(IReadOnlyDictionary<string, string> values) : 
 
 public sealed class BannerStrings(IReadOnlyDictionary<string, string> values) : StringGroup(values, "Banner")
 {
+    public string NetworkTitle => Get(nameof(NetworkTitle));
+
+    public string NetworkAction => Get(nameof(NetworkAction));
     public string NewVersions => Get(nameof(NewVersions));
 
     public string NewVersionsHint => Get(nameof(NewVersionsHint));
@@ -439,6 +478,77 @@ public sealed class BannerStrings(IReadOnlyDictionary<string, string> values) : 
     public string Offline => Get(nameof(Offline));
 
     public string Dismiss => Get(nameof(Dismiss));
+}
+
+public sealed class ProjectsStrings(IReadOnlyDictionary<string, string> values) : StringGroup(values, "Projects")
+{
+    public string Title => Get(nameof(Title));
+
+    public string Subtitle => Get(nameof(Subtitle));
+
+    public string Search => Get(nameof(Search));
+
+    public string Create => Get(nameof(Create));
+
+    public string CreateTitle => Get(nameof(CreateTitle));
+
+    public string CreateName => Get(nameof(CreateName));
+
+    public string CreateDefaultName => Get(nameof(CreateDefaultName));
+
+    public string CreateFolder => Get(nameof(CreateFolder));
+
+    public string CreatedBody => Get(nameof(CreatedBody));
+
+    public string CreateFailed => Get(nameof(CreateFailed));
+
+    public string InvalidName => Get(nameof(InvalidName));
+
+    public string ImportTitle => Get(nameof(ImportTitle));
+
+    public string ImportFailed => Get(nameof(ImportFailed));
+
+    public string Empty => Get(nameof(Empty));
+
+    public string EmptyHint => Get(nameof(EmptyHint));
+
+    public string NoResults => Get(nameof(NoResults));
+
+    public string NoResultsHint => Get(nameof(NoResultsHint));
+
+    public string Count => Get(nameof(Count));
+
+    public string SelectVersion => Get(nameof(SelectVersion));
+
+    public string UnknownVersion => Get(nameof(UnknownVersion));
+
+    public string MissingVersion => Get(nameof(MissingVersion));
+
+    public string VersionMissingTitle => Get(nameof(VersionMissingTitle));
+
+    public string VersionMissingBody => Get(nameof(VersionMissingBody));
+
+    public string VersionUnknownBody => Get(nameof(VersionUnknownBody));
+
+    public string More => Get(nameof(More));
+
+    public string Remove => Get(nameof(Remove));
+
+    public string RemoveFromDisk => Get(nameof(RemoveFromDisk));
+
+    public string OpenFolder => Get(nameof(OpenFolder));
+
+    public string ReloadInfo => Get(nameof(ReloadInfo));
+
+    public string ReloadTitle => Get(nameof(ReloadTitle));
+
+    public string MissingFile => Get(nameof(MissingFile));
+
+    public string DeleteTitle => Get(nameof(DeleteTitle));
+
+    public string DeleteBody => Get(nameof(DeleteBody));
+
+    public string OpenFailed => Get(nameof(OpenFailed));
 }
 
 public sealed class CommonStrings(IReadOnlyDictionary<string, string> values) : StringGroup(values, "Common")

@@ -15,6 +15,7 @@ namespace GodotLauncher.App.ViewModels;
 
 public enum ShellPage
 {
+    Projects,
     Explore,
     Installed,
     Settings
@@ -28,11 +29,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     public MainWindowViewModel(AppServices services)
         : base(services)
     {
+        Projects = new ProjectsViewModel(services, this);
         Explore = new ExploreViewModel(services);
         Installed = new InstalledViewModel(services, this);
         SettingsPage = new SettingsViewModel(services);
 
         services.CatalogChanged += (_, _) => OnCatalogChanged();
+        services.ProjectChanged += (_, _) => UpdateCounts();
         services.PropertyChanged += OnServicePropertyChanged;
         services.Downloads.Completed += OnDownloadCompleted;
         services.Downloads.PropertyChanged += OnDownloadsPropertyChanged;
@@ -46,6 +49,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
 
     /// <summary>Raised when an editor was started from the shell, e.g. the default editor.</summary>
     public event EventHandler<InstalledVersion>? EditorLaunched;
+
+    public ProjectsViewModel Projects { get; }
 
     public ExploreViewModel Explore { get; }
 
@@ -74,6 +79,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     private string _installedCountText = string.Empty;
 
     [ObservableProperty]
+    private string _projectsCountText = string.Empty;
+
+    [ObservableProperty]
     private string _downloadsCountText = string.Empty;
 
     [ObservableProperty]
@@ -94,6 +102,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     [ObservableProperty]
     private DialogViewModel? _dialog;
 
+    public bool IsProjectsSelected => Page == ShellPage.Projects;
+
     public bool IsExploreSelected => Page == ShellPage.Explore;
 
     public bool IsInstalledSelected => Page == ShellPage.Installed;
@@ -106,7 +116,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
 
     public bool HasInstalledCount => Services.Library.Count > 0;
 
+    public bool HasProjectsCount => Services.Projects.Count > 0;
+
     public bool HasDownloadsCount => Downloads.Count > 0;
+
+    [RelayCommand]
+    private void ShowProjects() => Page = ShellPage.Projects;
 
     [RelayCommand]
     private void ShowExplore() => Page = ShellPage.Explore;
@@ -225,6 +240,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
 
     partial void OnPageChanged(ShellPage value)
     {
+        OnPropertyChanged(nameof(IsProjectsSelected));
         OnPropertyChanged(nameof(IsExploreSelected));
         OnPropertyChanged(nameof(IsInstalledSelected));
         OnPropertyChanged(nameof(IsSettingsSelected));
@@ -237,11 +253,29 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
 
     partial void OnDialogChanged(DialogViewModel? value) => OnPropertyChanged(nameof(HasDialog));
 
+    /// <summary>True when the last network operation failed and the hint bar is useful.</summary>
+    public bool HasNetworkIssue => Services.HasNetworkIssue;
+
+    public string NetworkIssue => Services.NetworkIssue ?? string.Empty;
+
+    public string NetworkIssueTitle => L.Banner.NetworkTitle;
+
+    public string NetworkIssueAction => L.Banner.NetworkAction;
+
+    [RelayCommand]
+    private void OpenNetworkSettings() => Page = ShellPage.Settings;
+
     private void OnServicePropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
         if (args.PropertyName is nameof(AppServices.IsRefreshing) or nameof(AppServices.Catalog))
         {
             UpdateStatus();
+        }
+
+        if (args.PropertyName is nameof(AppServices.NetworkIssue) or nameof(AppServices.HasNetworkIssue))
+        {
+            OnPropertyChanged(nameof(HasNetworkIssue));
+            OnPropertyChanged(nameof(NetworkIssue));
         }
     }
 
@@ -349,9 +383,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     private void UpdateCounts()
     {
         InstalledCountText = Services.Library.Count.ToString(CultureInfo.CurrentCulture);
+        ProjectsCountText = Services.Projects.Count.ToString(CultureInfo.CurrentCulture);
         HasDownloads = Downloads.Count > 0;
         OnPropertyChanged(nameof(HasInstalled));
         OnPropertyChanged(nameof(HasInstalledCount));
+        OnPropertyChanged(nameof(HasProjectsCount));
         OnPropertyChanged(nameof(HasDownloadsCount));
         OnPropertyChanged(nameof(DownloadProgressText));
 

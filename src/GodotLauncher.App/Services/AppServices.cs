@@ -14,8 +14,11 @@ using GodotLauncher.Core.Downloads;
 using GodotLauncher.Core.Install;
 using GodotLauncher.Core.Launch;
 using GodotLauncher.Core.Models;
+using GodotLauncher.Core.Net;
+using GodotLauncher.Core.Projects;
 using GodotLauncher.Core.Settings;
 using GodotLauncher.Core.Storage;
+using GodotLauncher.Core.Updates;
 
 namespace GodotLauncher.App.Services;
 
@@ -32,6 +35,7 @@ public sealed class AppServices : INotifyPropertyChanged
     private readonly LocalizationService _localization;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private CancellationTokenSource? _saveCts;
+    private string? _networkIssue;
 
     public AppServices(AppPaths paths, FileLog log)
     {
@@ -45,8 +49,8 @@ public sealed class AppServices : INotifyPropertyChanged
         _localization = LocalizationService.Load((message, error) => log.Error(message, error));
         Loc = _localization.LoadStrings(loaded.Language);
 
-        Http = CreateHttpClient(decompress: true, timeout: TimeSpan.FromSeconds(90));
-        DownloadHttp = CreateHttpClient(decompress: false, timeout: Timeout.InfiniteTimeSpan);
+        Http = ProxySupport.CreateClient(Settings, decompress: true, TimeSpan.FromSeconds(90));
+        DownloadHttp = ProxySupport.CreateClient(Settings, decompress: false, Timeout.InfiniteTimeSpan);
 
         CatalogCache = new CatalogCache(paths.CatalogCacheFile);
         CatalogService = new CatalogService(
@@ -61,20 +65,13 @@ public sealed class AppServices : INotifyPropertyChanged
         Downloader = new HttpDownloader(DownloadHttp);
         Installer = new Installer(paths);
         Library = new InstallationLibrary(new InstallRegistry(paths.InstalledFile));
+        Projects = new ProjectStore(paths.ProjectsFile);
         Launcher = new EditorLauncher();
+        Updates = new UpdateChecker(Http, "Shaun-Fong", "GodotLauncher");
         Downloads = new DownloadManager(this);
 
-        Library.Changed += (_, _) =>
-        {
-            if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
-            {
-                InstallationChanged?.Invoke(this, EventArgs.Empty);
-            }
-            else
-            {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => InstallationChanged?.Invoke(this, EventArgs.Empty));
-            }
-        };
+        Library.Changed += (_, _) => RaiseOnUiThread(() => InstallationChanged?.Invoke(this, EventArgs.Empty));
+        Projects.Changed += (_, _) => RaiseOnUiThread(() => ProjectChanged?.Invoke(this, EventArgs.Empty));
         ApplyTheme(Settings.Theme);
     }
 
@@ -88,6 +85,9 @@ public sealed class AppServices : INotifyPropertyChanged
 
     /// <summary>Raised when the installation list changed on disk.</summary>
     public event EventHandler? InstallationChanged;
+
+    /// <summary>Raised when the tracked project list changed.</summary>
+    public event EventHandler? ProjectChanged;
 
     /// <summary>Raised when the catalog was loaded from cache or refreshed.</summary>
     public event EventHandler? CatalogChanged;
@@ -105,25 +105,42 @@ public sealed class AppServices : INotifyPropertyChanged
     /// <summary>Languages discovered from the localization files, independent of the active catalog.</summary>
     public IReadOnlyList<LanguageOption> Languages => _localization.Languages;
 
-    public HttpClient Http { get; }
+    public HttpClient Http { get; private set; }
 
-    public HttpClient DownloadHttp { get; }
+    public HttpClient DownloadHttp { get; private set; }
 
     public CatalogCache CatalogCache { get; }
 
-    public CatalogService CatalogService { get; }
+    public CatalogService CatalogService { get; private set; }
 
     public AssetResolver Resolver { get; private set; }
 
-    public HttpDownloader Downloader { get; }
+    public HttpDownloader Downloader { get; private set; }
 
     public Installer Installer { get; }
 
     public InstallationLibrary Library { get; }
 
+    public ProjectStore Projects { get; }
+
     public EditorLauncher Launcher { get; }
 
     public DownloadManager Downloads { get; }
+
+    /// <summary>Reads the latest launcher release from GitHub.</summary>
+    public UpdateChecker Updates { get; private set; }
+
+    /// <summary>Newer release found by the last update check, if any.</summary>
+    public LauncherRelease? AvailableUpdate { get; private set; }
+
+    /// <summary>True while the update check is running.</summary>
+    public bool IsCheckingUpdates { get; private set; }
+
+    /// <summary>Description of the last network problem, shown as an inline hint.</summary>
+    public string? NetworkIssue => _networkIssue;
+
+    /// <summary>True when <see cref="NetworkIssue"/> has a value.</summary>
+    public bool HasNetworkIssue => _networkIssue is not null;
 
     /// <summary>Latest catalog shown to the user, cached or fresh.</summary>
     public VersionCatalog? Catalog { get; private set; }
@@ -170,6 +187,12 @@ public sealed class AppServices : INotifyPropertyChanged
         if (!string.Equals(next.MirrorTemplate, before.MirrorTemplate, StringComparison.Ordinal))
         {
             Resolver = new AssetResolver(next.MirrorTemplate);
+        }
+
+        if (next.Proxy != before.Proxy ||
+            !string.Equals(next.ProxyUrl, before.ProxyUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            RebuildNetworkClients();
         }
 
         if (next.ConcurrentDownloads != before.ConcurrentDownloads)
@@ -219,6 +242,14 @@ public sealed class AppServices : INotifyPropertyChanged
             .GetResult();
     }
 
+    /// <summary>Loads the project list before the first frame.</summary>
+    public void LoadProjectsBlocking(CancellationToken cancellationToken = default)
+    {
+        Task.Run(() => Projects.LoadAsync(cancellationToken), cancellationToken)
+            .GetAwaiter()
+            .GetResult();
+    }
+
     /// <summary>Loads the cached catalog so the window can render instantly.</summary>
     public async Task<VersionCatalog?> LoadCachedCatalogAsync(CancellationToken cancellationToken = default)
     {
@@ -262,15 +293,18 @@ public sealed class AppServices : INotifyPropertyChanged
                 LastCatalogUpdate = DateTimeOffset.Now;
                 Log.Info($"Catalog refreshed from {catalog.Source}: {catalog.Count} versions, " +
                          $"{NewVersionIds.Count} new.");
+                SetNetworkIssue(null);
             }
             else if (result.Status == CatalogRefreshStatus.NotModified)
             {
                 LastCatalogUpdate = DateTimeOffset.Now;
                 Log.Info("Catalog is up to date.");
+                SetNetworkIssue(null);
             }
             else
             {
                 Log.Warn($"Catalog refresh failed: {result.Message}");
+                SetNetworkIssue(result.Message);
             }
 
             await OnUiThreadAsync(() =>
@@ -300,6 +334,114 @@ public sealed class AppServices : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Checks GitHub for a newer launcher release. Network problems are reported
+    /// inline through <see cref="NetworkIssue"/> instead of blocking the UI.
+    /// </summary>
+    public async Task<LauncherRelease?> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
+    {
+        if (IsCheckingUpdates)
+        {
+            return null;
+        }
+
+        IsCheckingUpdates = true;
+        OnPropertyChanged(nameof(IsCheckingUpdates));
+        try
+        {
+            var current = VersionNumber.TryParse(AppVersion, out var version)
+                ? version
+                : new VersionNumber(0, 1, 0);
+
+            var release = await Updates.CheckAsync(current, cancellationToken).ConfigureAwait(false);
+            AvailableUpdate = release;
+            OnPropertyChanged(nameof(AvailableUpdate));
+
+            if (release is null)
+            {
+                Log.Info("Launcher is up to date.");
+            }
+            else
+            {
+                Log.Info($"Launcher update available: {release.Tag}.");
+            }
+
+            SetNetworkIssue(null);
+            return release;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            Log.Warn($"Update check failed: {ex.Message}");
+            SetNetworkIssue(ex.Message);
+            return null;
+        }
+        finally
+        {
+            IsCheckingUpdates = false;
+            RaiseOnUiThread(() => OnPropertyChanged(nameof(IsCheckingUpdates)));
+        }
+    }
+
+    /// <summary>Downloads a release asset into the downloads folder.</summary>
+    public async Task<string> DownloadUpdateAsync(
+        LauncherReleaseAsset asset,
+        IProgress<DownloadProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(asset);
+
+        var target = Path.Combine(Paths.DownloadDirectory, asset.Name);
+        var request = new DownloadRequest
+        {
+            Uri = asset.DownloadUri,
+            DestinationPath = target,
+            ExpectedSize = asset.Size > 0 ? asset.Size : null,
+        };
+
+        var result = await Downloader.DownloadAsync(request, progress, cancellationToken).ConfigureAwait(false);
+        Log.Info($"Downloaded launcher update to {result.FilePath}.");
+        return result.FilePath;
+    }
+
+    /// <summary>Re-creates the HTTP clients after a proxy change.</summary>
+    private void RebuildNetworkClients()
+    {
+        var previousHttp = Http;
+        var previousDownload = DownloadHttp;
+
+        Http = ProxySupport.CreateClient(Settings, decompress: true, TimeSpan.FromSeconds(90));
+        DownloadHttp = ProxySupport.CreateClient(Settings, decompress: false, Timeout.InfiniteTimeSpan);
+        CatalogService = new CatalogService(
+            Http,
+            [
+                new VersionsYmlSource("versions-yml", new Uri(VersionsYmlUrl)),
+                new HtmlArchiveSource()
+            ],
+            CatalogCache);
+        Downloader = new HttpDownloader(DownloadHttp);
+        Updates = new UpdateChecker(Http, "Shaun-Fong", "GodotLauncher");
+
+        previousHttp.Dispose();
+        previousDownload.Dispose();
+        SetNetworkIssue(null);
+        Log.Info($"Proxy changed to {Settings.Proxy}; network clients were rebuilt.");
+    }
+
+    private void SetNetworkIssue(string? message)
+    {
+        if (string.Equals(_networkIssue, message, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _networkIssue = message;
+        RaiseOnUiThread(() =>
+        {
+            OnPropertyChanged(nameof(NetworkIssue));
+            OnPropertyChanged(nameof(HasNetworkIssue));
+        });
+    }
+
     /// <summary>Starts an editor and records the launch time.</summary>
     public LaunchResult Launch(InstalledVersion installation)
     {
@@ -312,6 +454,84 @@ public sealed class AppServices : INotifyPropertyChanged
         Log.Info($"Launched {installation.VersionId} ({installation.Architecture}): {result.CommandLine}");
         return result;
     }
+
+    /// <summary>
+    /// Picks the editor used to open a project: the explicit choice first, then an
+    /// installation matching the project's major.minor version, then the default editor.
+    /// </summary>
+    public InstalledVersion? FindEditorForProject(ProjectRecord project)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+
+        if (project.EditorId is { Length: > 0 } editorId)
+        {
+            var chosen = Library.Items.FirstOrDefault(
+                installation => string.Equals(installation.Id, editorId, StringComparison.OrdinalIgnoreCase));
+            if (chosen is not null)
+            {
+                return chosen;
+            }
+        }
+
+        if (!project.TryGetVersion(out var projectVersion))
+        {
+            return Library.FindDefault();
+        }
+
+        InstalledVersion? best = null;
+        VersionNumber bestVersion = default;
+        foreach (var installation in Library.Items)
+        {
+            if (!VersionNumber.TryParse(installation.VersionId, out var version) ||
+                version.Major != projectVersion.Major ||
+                version.Minor != projectVersion.Minor)
+            {
+                continue;
+            }
+
+            if (best is null ||
+                version.CompareTo(bestVersion) > 0 ||
+                (version.CompareTo(bestVersion) == 0 && IsStable(installation) && !IsStable(best)))
+            {
+                best = installation;
+                bestVersion = version;
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>Opens a project in the matching editor and records the access time.</summary>
+    /// <exception cref="LaunchException">No editor is available or the editor cannot be started.</exception>
+    public LaunchResult LaunchProject(ProjectRecord project)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+
+        var editor = FindEditorForProject(project)
+            ?? throw new LaunchException(
+                $"No installed editor matches Godot {project.VersionText ?? "version"} used by '{project.Name}'. Install that version first.");
+
+        return LaunchProject(project, editor);
+    }
+
+    /// <summary>Opens a project with a specific editor and records the access time.</summary>
+    public LaunchResult LaunchProject(ProjectRecord project, InstalledVersion editor)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(editor);
+
+        var result = Launcher.LaunchProject(editor, project.Path, new LaunchOptions
+        {
+            UseConsole = Settings.LaunchWithConsole
+        });
+
+        _ = Projects.TouchOpenedAsync(project.Path, DateTimeOffset.Now);
+        Log.Info($"Opened project '{project.Path}' with {editor.VersionId} ({editor.Architecture}): {result.CommandLine}");
+        return result;
+    }
+
+    private static bool IsStable(InstalledVersion installation) =>
+        installation.VersionId.EndsWith("-stable", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Opens a file, folder or URL with the operating system handler.</summary>
     public void OpenExternally(string target)
@@ -432,6 +652,17 @@ public sealed class AppServices : INotifyPropertyChanged
         }
 
         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(action);
+    }
+
+    private static void RaiseOnUiThread(Action action)
+    {
+        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(action);
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

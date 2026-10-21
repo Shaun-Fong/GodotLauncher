@@ -136,6 +136,9 @@ public partial class MainWindow : Window
     {
         switch (_viewModel.Page)
         {
+            case ShellPage.Projects when ProjectsHost.Content is null:
+                ProjectsHost.Content = new ProjectsView { DataContext = _viewModel.Projects };
+                break;
             case ShellPage.Installed when InstalledHost.Content is null:
                 InstalledHost.Content = new InstalledView { DataContext = _viewModel.Installed };
                 break;
