@@ -132,6 +132,8 @@
                       Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !IsCheckingUpdates}" />
               <Button Classes="primary" Content="{Binding Text.Settings.DownloadUpdate}"
                       Command="{Binding DownloadUpdateCommand}" IsVisible="{Binding HasUpdate}" />
+              <Button Classes="primary" Content="{Binding Text.Settings.InstallUpdate}"
+                      Command="{Binding InstallUpdateCommand}" IsVisible="{Binding IsUpdateReady}" />
             </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="200,*">

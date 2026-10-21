@@ -37,6 +37,13 @@ public partial class App : Application
         // Scratch space from an interrupted install is never needed after a restart.
         services.CleanStagingDirectories();
 
+        // Update scripts remove themselves, but their temporary folder stays locked until they exit.
+        var staleUpdates = UpdateInstaller.CleanupStaleDirectories(TimeSpan.FromHours(1));
+        if (staleUpdates > 0)
+        {
+            services.Log.Info($"Removed {staleUpdates} temporary update folder(s).");
+        }
+
         // Reading the cache is a local file access and guarantees a populated first frame.
         try
         {
@@ -121,11 +128,27 @@ public partial class App : Application
             () => _ = services.RefreshCatalogAsync(),
             DispatcherPriority.Background);
 
+        Dispatcher.UIThread.Post(
+            () => _ = CheckForLauncherUpdateAsync(services),
+            DispatcherPriority.ApplicationIdle);
+
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(30) };
         _refreshTimer.Tick += (_, _) => RefreshWhenDue(services);
         _refreshTimer.Start();
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static async Task CheckForLauncherUpdateAsync(AppServices services)
+    {
+        try
+        {
+            await services.CheckForUpdatesAsync();
+        }
+        catch (Exception exception)
+        {
+            services.Log.Warn($"Could not check for launcher updates: {exception.Message}");
+        }
     }
 
     private static void RefreshWhenDue(AppServices services)

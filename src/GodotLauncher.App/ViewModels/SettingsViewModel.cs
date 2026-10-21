@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,6 +17,8 @@ namespace GodotLauncher.App.ViewModels;
 public sealed partial class SettingsViewModel : ViewModelBase
 {
     private bool _loading;
+    private string? _updateArchivePath;
+    private string? _updateVersionTag;
 
     public SettingsViewModel(AppServices services)
         : base(services)
@@ -28,6 +32,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         RefreshIntervals = [];
         BuildOptions();
         Load();
+        services.PropertyChanged += OnServicePropertyChanged;
     }
 
     public ObservableCollection<LabeledOption<ThemeMode>> Themes { get; }
@@ -106,6 +111,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _hasUpdate;
+
+    [ObservableProperty]
+    private bool _isUpdateReady;
 
     public string VersionText => $"Godot Launcher {AppServices.AppVersion}";
 
@@ -355,14 +363,72 @@ public sealed partial class SettingsViewModel : ViewModelBase
         try
         {
             var path = await Services.DownloadUpdateAsync(asset);
-            UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateDownloaded, path);
+            _updateArchivePath = path;
+            _updateVersionTag = release.Tag;
             HasUpdate = false;
+            IsUpdateReady = true;
+            UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateReady, release.Tag);
         }
         catch (Exception exception)
         {
             Services.Log.Error("Could not download the launcher update.", exception);
             UpdateStatus = L.Settings.UpdateCheckFailed;
         }
+    }
+
+    [RelayCommand]
+    private void InstallUpdate()
+    {
+        if (string.IsNullOrEmpty(_updateArchivePath))
+        {
+            return;
+        }
+
+        var executable = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(executable))
+        {
+            UpdateStatus = L.Settings.UpdateInstallFailed;
+            Services.Log.Warn("Could not install the launcher update: unknown executable path.");
+            return;
+        }
+
+        if (!UpdateInstaller.TryApply(_updateArchivePath, executable, Services.Log, out var error))
+        {
+            UpdateStatus = L.Settings.UpdateInstallFailed;
+            if (!string.IsNullOrEmpty(error))
+            {
+                Services.Log.Warn($"Could not install the launcher update: {error}");
+            }
+
+            return;
+        }
+
+        Services.Log.Info($"Restarting to install launcher update {_updateVersionTag ?? "(unknown)"}.");
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+        else
+        {
+            Environment.Exit(0);
+        }
+    }
+
+    private void OnServicePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName != nameof(AppServices.AvailableUpdate) || _loading)
+        {
+            return;
+        }
+
+        var release = Services.AvailableUpdate;
+        if (release is null || IsUpdateReady || IsCheckingUpdates)
+        {
+            return;
+        }
+
+        HasUpdate = true;
+        UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateAvailable, release.Tag);
     }
 
     private static LauncherReleaseAsset? PickUpdateAsset(LauncherRelease release)
