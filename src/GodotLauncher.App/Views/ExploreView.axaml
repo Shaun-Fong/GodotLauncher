@@ -9,11 +9,12 @@
         <TextBlock Classes="h1" Text="{Binding Text.Explore.Title}" />
         <TextBlock Classes="body" Text="{Binding Text.Explore.Subtitle}" TextWrapping="Wrap" />
       </StackPanel>
-      <Button Grid.Column="1" Classes="primary" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsRefreshing}"
+      <Button Grid.Column="1" Classes="secondary" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsRefreshing}"
               MinWidth="104" VerticalAlignment="Center" Margin="16,0,0,0">
         <StackPanel Orientation="Horizontal" Spacing="7">
-          <Path Data="{DynamicResource IconRefresh}" Width="14" Height="14" Stretch="Uniform" Fill="White" />
-          <TextBlock Text="{Binding Text.Explore.Refresh}" Foreground="White" FontSize="13" />
+          <Path Data="{DynamicResource IconRefresh}" Width="14" Height="14" Stretch="Uniform"
+                Fill="{DynamicResource AccentBrush}" />
+          <TextBlock Text="{Binding Text.Explore.Refresh}" Foreground="{DynamicResource AccentBrush}" FontSize="13" />
         </StackPanel>
       </Button>
     </Grid>
@@ -54,8 +55,8 @@
                   <TextBlock Classes="caption" Text="{Binding MetaText}" />
                 </StackPanel>
 
-                <Button Grid.Column="1" Classes="primary" MinWidth="112" VerticalAlignment="Center"
-                        Command="{Binding PrimaryCommand}" Content="{Binding ActionText}" />
+                <Button Grid.Column="1" Classes="primary" Classes.success="{Binding IsInstalled}" MinWidth="112"
+                        VerticalAlignment="Center" Command="{Binding PrimaryCommand}" Content="{Binding ActionText}" />
               </Grid>
             </Border>
           </DataTemplate>

@@ -12,12 +12,14 @@
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#EDEEF3" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9AA1B2" />
       <SolidColorBrush x:Key="TextMutedBrush" Color="#6B7280" />
-      <SolidColorBrush x:Key="AccentBrush" Color="#6D5CFF" />
-      <SolidColorBrush x:Key="AccentHoverBrush" Color="#7E6FFF" />
-      <SolidColorBrush x:Key="AccentPressedBrush" Color="#5B4BE8" />
-      <SolidColorBrush x:Key="AccentSoftBrush" Color="#26224A" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#3B82F6" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#60A5FA" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#2563EB" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#17233D" />
       <SolidColorBrush x:Key="DangerBrush" Color="#F0616D" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#3FB950" />
+      <SolidColorBrush x:Key="SuccessHoverBrush" Color="#56D364" />
+      <SolidColorBrush x:Key="SuccessPressedBrush" Color="#2EA043" />
       <SolidColorBrush x:Key="WarningBrush" Color="#E3A008" />
       <SolidColorBrush x:Key="ChannelStableBrush" Color="#3FB950" />
       <SolidColorBrush x:Key="ChannelRcBrush" Color="#58A6FF" />
@@ -37,12 +39,14 @@
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#16181D" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5B6273" />
       <SolidColorBrush x:Key="TextMutedBrush" Color="#8A91A0" />
-      <SolidColorBrush x:Key="AccentBrush" Color="#5A49F0" />
-      <SolidColorBrush x:Key="AccentHoverBrush" Color="#6D5CFF" />
-      <SolidColorBrush x:Key="AccentPressedBrush" Color="#4B3CD6" />
-      <SolidColorBrush x:Key="AccentSoftBrush" Color="#ECE9FF" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#2563EB" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#3B82F6" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#1D4ED8" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="#DBEAFE" />
       <SolidColorBrush x:Key="DangerBrush" Color="#D93A47" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#1F883D" />
+      <SolidColorBrush x:Key="SuccessHoverBrush" Color="#2DA44E" />
+      <SolidColorBrush x:Key="SuccessPressedBrush" Color="#1A7433" />
       <SolidColorBrush x:Key="WarningBrush" Color="#BF8700" />
       <SolidColorBrush x:Key="ChannelStableBrush" Color="#1F883D" />
       <SolidColorBrush x:Key="ChannelRcBrush" Color="#1F6FEB" />
