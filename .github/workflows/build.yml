@@ -31,7 +31,7 @@ jobs:
         run: dotnet restore GodotLauncher.slnx
 
       - name: Test
-        run: dotnet test tests/GodotLauncher.Core.Tests/GodotLauncher.Core.Tests.csproj --configuration Release --no-restore --logger "console;verbosity=normal"
+        run: dotnet test GodotLauncher.slnx --configuration Release --no-restore --logger "console;verbosity=normal"
 
   package:
     name: package (${{ matrix.rid }})

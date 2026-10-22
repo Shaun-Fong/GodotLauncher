@@ -82,7 +82,7 @@ dotnet run --project src/GodotLauncher.App
 Run the tests:
 
 ```bash
-dotnet test tests/GodotLauncher.Core.Tests/GodotLauncher.Core.Tests.csproj
+dotnet test GodotLauncher.slnx
 ```
 
 Produce a self-contained single-file build:

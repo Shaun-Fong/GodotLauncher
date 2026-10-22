@@ -4,6 +4,7 @@
     <Project Path="src/GodotLauncher.Core/GodotLauncher.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/GodotLauncher.App.Tests/GodotLauncher.App.Tests.csproj" />
     <Project Path="tests/GodotLauncher.Core.Tests/GodotLauncher.Core.Tests.csproj" />
   </Folder>
 </Solution>

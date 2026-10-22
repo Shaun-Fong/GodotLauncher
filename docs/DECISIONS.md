@@ -97,6 +97,22 @@ Every language is one JSON file in `Localization/`. Each file carries `Language.
 a file and nothing else. The XAML binds to typed groups (`Strings.Explore.Search`) generated from the
 key structure, which keeps refactoring safe and missing keys visible.
 
+Text that is derived from a status, rather than bound to a field, is stored as a small state and
+rendered again whenever the language changes: the update status keeps its kind and version tag, and the
+settings page re-raises its computed lines. Without that, a message rendered in the previous language
+survives the switch — the bug that made "当前已是最新版本" stay Chinese in the English UI. Failure
+details from the operating system stay in a tooltip instead of being appended to the localized sentence,
+because Windows localizes exception text with its own UI language.
+
+## Localization and view models are tested headlessly
+
+`tests/GodotLauncher.App.Tests` runs the real view models on Avalonia's headless platform, which needs no
+display and works on the CI runners. It asserts that both catalogs define the same keys and
+placeholders, that every property exposed by `Strings` resolves, and that computed messages follow a
+language switch. The same suite covers the proxy address rule and the project import flow, which are the
+two places where recent bugs appeared. `dotnet test GodotLauncher.slnx` runs it together with the core
+suite on every push.
+
 ## Startup: what was measured and what remains
 
 Release build, self-contained single-file, ReadyToRun, on Windows 11 (three runs):

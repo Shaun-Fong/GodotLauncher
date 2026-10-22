@@ -144,9 +144,18 @@ resources used by the pill badges.
 
 `tests/GodotLauncher.Core.Tests` covers catalog parsing and fallback behaviour, normalization and
 sorting, slug resolution, the downloader (resume, retry, fallback, checksum mismatch), zip extraction
-and zip-slip rejection, executable discovery, installation and the registry, library persistence and
-preview cleanup, TOML parsing and corrupt-file recovery, launching, and the rolling log. The suite runs
-on Windows and Linux in CI.
+and zip-slip rejection, executable discovery (including .NET archives nested in a folder), installation
+and the registry, the std/dotnet folder split and its migration, library persistence and preview
+cleanup, TOML parsing and corrupt-file recovery, proxy parsing, update checks with the rate-limit
+fallback, launching, and the rolling log.
+
+`tests/GodotLauncher.App.Tests` runs view models headlessly (Avalonia.Headless.XUnit) and guards the
+localization catalogs: both languages must define the same keys and placeholders, every string exposed
+by `Strings` must exist, and switching the language has to re-render computed messages such as the
+update status and license line. It also covers the proxy address visibility rule, the project import
+flow (matching editor, missing-version warning, rejected folder) and the default projects page.
+
+`dotnet test GodotLauncher.slnx` runs both suites on Windows and Linux in CI.
 
 ## Projects
 

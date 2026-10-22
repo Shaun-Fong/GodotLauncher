@@ -33,4 +33,8 @@
     <AvaloniaResource Include="Localization\*.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="GodotLauncher.App.Tests" />
+  </ItemGroup>
+
 </Project>
