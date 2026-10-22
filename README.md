@@ -25,7 +25,7 @@ A fast, small desktop launcher for <a href="https://godotengine.org/">Godot Engi
 - **Offline first** — the cached catalog and the installed editor list are shown immediately, even with
   no network access. Conditional requests (`ETag`/`If-None-Match`) keep refreshes cheap, and a
   truncated upstream catalog is rejected instead of replacing a good cache.
-- **Side-by-side installs** — every version lives in its own folder under `editors/std` or `editors/mono`.
+- **Side-by-side installs** — every version lives in its own folder under `editors/std` or `editors/dotnet`.
   Standard and .NET editions, and x86_64, x86_32, ARM64 and ARM32 builds are resolved automatically for
   the current platform.
 - **Resumable downloads** — downloads use `.part` files with HTTP range requests, show speed and time
@@ -109,7 +109,7 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 | `projects.json` | Project library |
 | `catalog-cache.json` | Last known release catalog |
 | `logs/launcher.log` | Rolling log, 2 MB × 3 files |
-| `editors/<std\|mono>/<version-id>/` | Installed editors (configurable) |
+| `editors/<std\|dotnet>/<version-id>/` | Installed editors (configurable) |
 | `downloads/`, `.staging/` | In-flight archives and extraction scratch space |
 
 ## Status

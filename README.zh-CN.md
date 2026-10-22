@@ -22,7 +22,7 @@
   通知后，应用内还会显示横幅提示。
 - **离线优先** —— 有缓存时即使没有网络也能立即显示版本列表和已安装编辑器，并使用
   `ETag`/`If-None-Match` 条件请求降低刷新开销；当上游返回的目录明显残缺时，会保留旧缓存而不是覆盖它。
-- **并排安装** —— 每个版本都有独立目录，位于 `editors/std` 或 `editors/mono` 下。自动为当前平台
+- **并排安装** —— 每个版本都有独立目录，位于 `editors/std` 或 `editors/dotnet` 下。自动为当前平台
   解析 Standard 与 .NET 版本，以及 x86_64、x86_32、ARM64、ARM32 架构。
 - **断点续传下载** —— 使用 `.part` 文件和 HTTP Range 请求，显示速度与剩余时间，支持取消、重试，
   重启后仍可继续。
@@ -97,7 +97,7 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 | `projects.json` | 项目库 |
 | `catalog-cache.json` | 最近一次获取的版本目录 |
 | `logs/launcher.log` | 滚动日志，2 MB × 3 个文件 |
-| `editors/<std\|mono>/<version-id>/` | 已安装的编辑器（位置可配置） |
+| `editors/<std\|dotnet>/<version-id>/` | 已安装的编辑器（位置可配置） |
 | `downloads/`、`.staging/` | 下载中的压缩包与解压暂存目录 |
 
 ## 当前状态

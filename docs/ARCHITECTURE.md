@@ -91,13 +91,16 @@ The download pipeline is:
 6. Locate the editor executable, move the staging directory into place and register the installation.
 7. Delete the archive and staging directory.
 
-The .NET archives put their payload one level deep (`Godot_v4.8-beta1_mono_win64/…`), so the
+The .NET archives put their payload one level deep (`Godot_v4.8-beta1_mono_win64/...`), so the
 executable finder searches the archive root and one nested level, and the installer unwraps a staging
-directory that holds a single folder. Managed installs therefore land flattened in `mono/<version>` with
+directory that holds a single folder. Managed installs therefore land flattened in `dotnet/<version>` with
 `GodotSharp/` beside the executable.
 
 Leftover `.part` files are kept, so asking for the same download again after a restart resumes it.
 Staging directories older than an hour are removed at startup instead of accumulating.
+
+Launchers that installed .NET editors before this layout existed move `mono/` to `dotnet/` on startup
+and rewrite the affected registry paths, so nothing has to be reinstalled.
 
 The registry (`installed.json`) records one entry per version, edition and architecture, including the
 executable path relative to the install directory, size on disk, source, hash, pinned/alias flags, last

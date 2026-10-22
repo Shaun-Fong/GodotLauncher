@@ -76,9 +76,10 @@ tables or arrays are needed later, replacing it with Tomlyn is a contained chang
 ## One registry per version, edition and architecture
 
 `installed.json` keys installations by `{version id}|{edition}|{architecture}`. That allows a Standard
-and a .NET build of the same version to coexist, supports registering an editor downloaded by hand
+and a .NET build of the same version to coexist in separate `editors/std` and `editors/dotnet` trees,
+so the two downloads can never overwrite each other, supports registering an editor downloaded by hand
 (never deleted by the launcher), and matches the folder layout `editors/std/<id>` and
-`editors/mono/<id>`. The first installation is promoted to default automatically, and libraries without
+`editors/dotnet/<id>`. The first installation is promoted to default automatically, and libraries without
 a default are repaired on load by promoting the most recently launched editor.
 
 ## Single instance without extra dependencies
@@ -162,11 +163,11 @@ default editor.
 A running executable cannot overwrite itself on Windows, so an update is applied by a small script
 (UpdateInstaller in the app project) that is started detached in a temporary folder. The script waits
 for the launcher process id to disappear, unpacks the downloaded archive (Expand-Archive on Windows,
-	ar -xf elsewhere), copies the files over the install directory, starts the launcher again and deletes
+ tar -xf elsewhere), copies the files over the install directory, starts the launcher again and deletes
 the temporary folder and the archive. The About section shows the check result, downloads the asset that
 matches the host platform (win-x64, osx-arm64, ...) with live speed on the button, cancels on a second
-click, and installs as soon as the archive is ready. The install
-folder is probed for write access first: on a read-only location the launcher reports the problem instead
+click, and installs as soon as the archive is ready. The sidebar version row shows the same button so
+an update can be started from any page. The install folder is probed for write access first: on a read-only location the launcher reports the problem instead
 of leaving a half-replaced directory. Updates are opt-in; nothing is downloaded without the user asking.
 
 ## Proxy handling rebuilds HTTP clients
