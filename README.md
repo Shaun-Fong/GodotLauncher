@@ -50,6 +50,10 @@ A fast, small desktop launcher for <a href="https://godotengine.org/">Godot Engi
 - **Portable settings** — human-editable TOML configuration, atomic writes, corrupt files backed up
   instead of crashing.
 
+## Preview
+
+![Preview](docs/images/cap.gif)
+
 ## Download
 
 Prebuilt archives are attached to [releases](https://github.com/Shaun-Fong/GodotLauncher/releases):

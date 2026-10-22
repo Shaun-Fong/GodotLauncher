@@ -40,6 +40,10 @@
   可取消；下载完成后自动重启完成更新。若 GitHub API 触发速率限制，会改用发布页面继续检查。
 - **可编辑配置** —— 人类可读的 TOML 配置、原子写入；配置损坏时会自动备份并重建，而不是崩溃。
 
+## 预览
+
+![预览](docs/images/cap.gif)
+
 ## 下载
 
 预构建的压缩包发布在 [Releases](https://github.com/Shaun-Fong/GodotLauncher/releases) 页面：
