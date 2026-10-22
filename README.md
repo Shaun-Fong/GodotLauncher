@@ -118,9 +118,10 @@ dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj \
 
 ## Status
 
-Version 0.5.1 is the current release. Implemented: release catalog, downloads and installation,
-launching, project library, installed editor management, tray, themes, localization, settings, proxy
-support, launcher self-update, single instance and optional autostart.
+Version 0.6.0 is the current release. Implemented: release catalog, downloads and installation into a
+configurable install location, launching, project library, installed editor management, tray, themes,
+localization, settings, proxy support, launcher self-update, single instance and optional autostart.
+Commit checks run both test suites on Windows and Linux; release archives are built from tags.
 
 Known gaps are tracked in [docs/DECISIONS.md](docs/DECISIONS.md#known-gaps), including cold start
 (~0.9 s instead of the 300 ms target) and checksum verification, which currently only happens when the
