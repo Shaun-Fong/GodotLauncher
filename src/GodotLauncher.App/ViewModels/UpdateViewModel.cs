@@ -12,6 +12,20 @@ using GodotLauncher.Core.Updates;
 
 namespace GodotLauncher.App.ViewModels;
 
+/// <summary>Which message <see cref="UpdateViewModel.StatusText"/> currently carries.</summary>
+internal enum UpdateStatusKind
+{
+    None,
+    Checking,
+    UpToDate,
+    Available,
+    RateLimited,
+    Failed,
+    Ready,
+    Cancelled,
+    InstallFailed,
+}
+
 /// <summary>
 /// Launcher self-update state, shared by the sidebar badge and the settings page so both
 /// controls always show the same progress, speed and cancel behaviour.
@@ -23,6 +37,8 @@ public sealed partial class UpdateViewModel : ObservableObject
     private string? _archivePath;
     private string? _versionTag;
     private CancellationTokenSource? _downloadCts;
+    private UpdateStatusKind _statusKind;
+    private string? _statusTag;
 
     public UpdateViewModel(AppServices services)
     {
@@ -87,20 +103,35 @@ public sealed partial class UpdateViewModel : ObservableObject
 
     private void RefreshStrings()
     {
-        if (!IsDownloading && !IsChecking)
-        {
-            if (IsReady && !string.IsNullOrEmpty(_versionTag))
-            {
-                StatusText = string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateReady, _versionTag);
-            }
-            else if (HasUpdate && _services.AvailableUpdate is { } release)
-            {
-                StatusText = string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateAvailable, release.Tag);
-            }
-        }
-
+        // The message is rebuilt from its kind, so a language switch also refreshes
+        // statuses that carry no release tag, such as "up to date".
+        StatusText = FormatStatus(_statusKind, _statusTag);
         RefreshState();
     }
+
+    /// <summary>Stores the current status kind and renders it in the active language.</summary>
+    private void SetStatus(UpdateStatusKind kind, string? tag = null)
+    {
+        _statusKind = kind;
+        _statusTag = tag;
+        StatusText = FormatStatus(kind, tag);
+    }
+
+    /// <summary>Renders a status without changing the stored kind; used by the language switch.</summary>
+    internal void ApplyStatus(UpdateStatusKind kind, string? tag = null) => SetStatus(kind, tag);
+
+    private string FormatStatus(UpdateStatusKind kind, string? tag) => kind switch
+    {
+        UpdateStatusKind.Checking => _services.Loc.Settings.CheckingUpdates,
+        UpdateStatusKind.UpToDate => _services.Loc.Settings.UpToDate,
+        UpdateStatusKind.Available => string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateAvailable, tag ?? string.Empty),
+        UpdateStatusKind.RateLimited => _services.Loc.Settings.UpdateRateLimited,
+        UpdateStatusKind.Failed => _services.Loc.Settings.UpdateCheckFailed,
+        UpdateStatusKind.Ready => string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateReady, tag ?? string.Empty),
+        UpdateStatusKind.Cancelled => _services.Loc.Settings.UpdateCancelled,
+        UpdateStatusKind.InstallFailed => _services.Loc.Settings.UpdateInstallFailed,
+        _ => string.Empty,
+    };
 
     private void OnServicePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
@@ -118,9 +149,7 @@ public sealed partial class UpdateViewModel : ObservableObject
 
         var release = _services.AvailableUpdate;
         HasUpdate = release is not null;
-        StatusText = release is null
-            ? string.Empty
-            : string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateAvailable, release.Tag);
+        SetStatus(release is null ? UpdateStatusKind.None : UpdateStatusKind.Available, release?.Tag);
     }
 
     /// <summary>Checks GitHub for a newer release and reports the result in <see cref="StatusText"/>.</summary>
@@ -132,27 +161,26 @@ public sealed partial class UpdateViewModel : ObservableObject
         }
 
         IsChecking = true;
-        StatusText = _services.Loc.Settings.CheckingUpdates;
+        SetStatus(UpdateStatusKind.Checking);
         DetailText = string.Empty;
         try
         {
             var release = await _services.CheckForUpdatesAsync();
             HasUpdate = release is not null;
-            StatusText = release is null
-                ? _services.Loc.Settings.UpToDate
-                : string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateAvailable, release.Tag);
+            SetStatus(release is null ? UpdateStatusKind.UpToDate : UpdateStatusKind.Available, release?.Tag);
         }
         catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
         {
             _services.Log.Warn($"GitHub rate limit reached while checking for launcher updates: {exception.Message}");
             HasUpdate = false;
-            StatusText = _services.Loc.Settings.UpdateRateLimited;
+            SetStatus(UpdateStatusKind.RateLimited);
         }
         catch (Exception exception)
         {
             _services.Log.Warn($"Could not check for launcher updates: {exception.Message}");
             HasUpdate = false;
-            StatusText = DescribeFailure(exception);
+            SetStatus(UpdateStatusKind.Failed);
+            DescribeFailure(exception);
         }
         finally
         {
@@ -194,7 +222,7 @@ public sealed partial class UpdateViewModel : ObservableObject
         IsDownloading = true;
         Progress = 0;
         ActionText = _services.Loc.Settings.UpdatePreparing;
-        StatusText = string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateAvailable, release!.Tag);
+        SetStatus(UpdateStatusKind.Available, release!.Tag);
 
         var progress = new Progress<DownloadProgress>(report =>
         {
@@ -211,7 +239,7 @@ public sealed partial class UpdateViewModel : ObservableObject
             _versionTag = release.Tag;
             Progress = 1;
             ActionText = _services.Loc.Settings.UpdateInstalling;
-            StatusText = string.Format(CultureInfo.CurrentCulture, _services.Loc.Settings.UpdateReady, release.Tag);
+            SetStatus(UpdateStatusKind.Ready, release.Tag);
             IsDownloading = false;
             IsReady = true;
             Install();
@@ -223,7 +251,7 @@ public sealed partial class UpdateViewModel : ObservableObject
         {
             IsDownloading = false;
             Progress = 0;
-            StatusText = _services.Loc.Settings.UpdateCancelled;
+            SetStatus(UpdateStatusKind.Cancelled);
             _services.Log.Info("Launcher update download cancelled.");
         }
         catch (Exception exception)
@@ -231,7 +259,8 @@ public sealed partial class UpdateViewModel : ObservableObject
             IsDownloading = false;
             Progress = 0;
             _services.Log.Error("Could not download the launcher update.", exception);
-            StatusText = DescribeFailure(exception);
+            SetStatus(UpdateStatusKind.Failed);
+            DescribeFailure(exception);
         }
         finally
         {
@@ -250,14 +279,14 @@ public sealed partial class UpdateViewModel : ObservableObject
         var executable = Environment.ProcessPath;
         if (string.IsNullOrEmpty(executable))
         {
-            StatusText = _services.Loc.Settings.UpdateInstallFailed;
+            SetStatus(UpdateStatusKind.InstallFailed);
             return;
         }
 
         if (!UpdateInstaller.TryApply(_archivePath, executable, _services.Log, out var error))
         {
             _services.Log.Warn($"Could not start the update script: {error}");
-            StatusText = _services.Loc.Settings.UpdateInstallFailed;
+            SetStatus(UpdateStatusKind.InstallFailed);
             return;
         }
 
@@ -268,7 +297,7 @@ public sealed partial class UpdateViewModel : ObservableObject
         }
     }
 
-    private string DescribeFailure(Exception exception)
+    private void DescribeFailure(Exception exception)
     {
         var detail = exception.Message;
         if (exception.InnerException is { } inner
@@ -287,7 +316,6 @@ public sealed partial class UpdateViewModel : ObservableObject
         // always match the launcher language. Keep the raw detail out of the sentence and offer it
         // as a tooltip instead, so the visible status stays in one language.
         DetailText = detail;
-        return _services.Loc.Settings.UpdateCheckFailed;
     }
 
     private static LauncherReleaseAsset? PickAsset(LauncherRelease release)

@@ -122,6 +122,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public bool HasProxyError => !string.IsNullOrEmpty(ProxyError);
 
+    /// <summary>True when the proxy address field is relevant.</summary>
+    public bool IsCustomProxy => SelectedProxy?.Value == ProxyMode.Custom;
+
     partial void OnProxyErrorChanged(string value) => OnPropertyChanged(nameof(HasProxyError));
 
     [ObservableProperty]
@@ -139,6 +142,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     protected override void OnLanguageChanged()
     {
+        // Texts that are computed from the catalog are not observable on their own.
+        RaiseStaticTexts();
+
         // Rebuilding the option lists inside the ComboBox's own selection callback
         // leaves that ComboBox without a selection, so its text disappears. Let the
         // input event finish first, then rebuild and restore the selections.
@@ -149,6 +155,14 @@ public sealed partial class SettingsViewModel : ViewModelBase
                 Load();
             },
             DispatcherPriority.Background);
+    }
+
+    private void RaiseStaticTexts()
+    {
+        OnPropertyChanged(nameof(LicenseText));
+        OnPropertyChanged(nameof(VersionText));
+        OnPropertyChanged(nameof(DataFolder));
+        OnPropertyChanged(nameof(RepositoryUrl));
     }
 
     protected override void OnSettingsChanged()
@@ -223,6 +237,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     partial void OnSelectedProxyChanged(LabeledOption<ProxyMode>? value)
     {
+        OnPropertyChanged(nameof(IsCustomProxy));
+
         if (_loading || value is null)
         {
             return;
