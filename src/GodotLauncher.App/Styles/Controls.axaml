@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:GodotLauncher.App.Controls">
   <Styles.Resources>
     <StreamGeometry x:Key="IconExplore">M4 5h2v2H4zM9 5h11v2H9zM4 10h2v2H4zM9 10h11v2H9zM4 15h2v2H4zM9 15h11v2H9z</StreamGeometry>
     <StreamGeometry x:Key="IconInstalled">M12 2 3 6.5v11L12 22l9-4.5v-11L12 2zm0 2.2 6.5 3.2L12 10.6 5.5 7.4 12 4.2zM5 8.9l6 3v7.9l-6-3V8.9zm8 10.9v-7.9l6-3v7.9l-6 3z</StreamGeometry>
@@ -13,6 +14,7 @@
     <StreamGeometry x:Key="IconProject">M3 5a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5zm2 3v10h14V8H5z</StreamGeometry>
     <StreamGeometry x:Key="IconAdd">M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7V4z</StreamGeometry>
     <StreamGeometry x:Key="IconMore">M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z</StreamGeometry>
+    <StreamGeometry x:Key="IconStop">M7 7h10v10H7z</StreamGeometry>
   </Styles.Resources>
 
   <Style Selector="Window">
@@ -403,5 +405,17 @@
     <Setter Property="Padding" Value="10,6" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <!-- Update buttons paint their background with the download progress. -->
+  <Style Selector="controls|ProgressFill">
+    <Setter Property="Track" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="Fill" Value="{DynamicResource AccentHoverBrush}" />
+  </Style>
+
+  <!-- While an update is downloading, hovering the button announces that a click stops it. -->
+  <Style Selector="Button.update:pointerover controls|ProgressFill">
+    <Setter Property="Track" Value="{DynamicResource DangerTrackBrush}" />
+    <Setter Property="Fill" Value="{DynamicResource DangerFillBrush}" />
   </Style>
 </Styles>

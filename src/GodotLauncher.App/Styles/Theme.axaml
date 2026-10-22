@@ -17,6 +17,9 @@
       <SolidColorBrush x:Key="AccentPressedBrush" Color="#2563EB" />
       <SolidColorBrush x:Key="AccentSoftBrush" Color="#17233D" />
       <SolidColorBrush x:Key="DangerBrush" Color="#F0616D" />
+      <SolidColorBrush x:Key="DangerHoverBrush" Color="#F5818B" />
+      <SolidColorBrush x:Key="DangerTrackBrush" Color="#43222A" />
+    <SolidColorBrush x:Key="DangerFillBrush" Color="#C9404E" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#3FB950" />
       <SolidColorBrush x:Key="SuccessHoverBrush" Color="#56D364" />
       <SolidColorBrush x:Key="SuccessPressedBrush" Color="#2EA043" />
@@ -44,6 +47,9 @@
       <SolidColorBrush x:Key="AccentPressedBrush" Color="#1D4ED8" />
       <SolidColorBrush x:Key="AccentSoftBrush" Color="#DBEAFE" />
       <SolidColorBrush x:Key="DangerBrush" Color="#D93A47" />
+      <SolidColorBrush x:Key="DangerHoverBrush" Color="#C13442" />
+      <SolidColorBrush x:Key="DangerTrackBrush" Color="#F8DCE0" />
+    <SolidColorBrush x:Key="DangerFillBrush" Color="#C13442" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#1F883D" />
       <SolidColorBrush x:Key="SuccessHoverBrush" Color="#2DA44E" />
       <SolidColorBrush x:Key="SuccessPressedBrush" Color="#1A7433" />
