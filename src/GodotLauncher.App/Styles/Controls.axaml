@@ -413,6 +413,15 @@
     <Setter Property="Fill" Value="{DynamicResource AccentHoverBrush}" />
   </Style>
 
+  <!-- The stop glyph only appears while the pointer is over the button. -->
+  <Style Selector="Button.update Path.stop">
+    <Setter Property="Opacity" Value="0" />
+  </Style>
+
+  <Style Selector="Button.update:pointerover Path.stop">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+
   <!-- While an update is downloading, hovering the button announces that a click stops it. -->
   <Style Selector="Button.update:pointerover controls|ProgressFill">
     <Setter Property="Track" Value="{DynamicResource DangerTrackBrush}" />

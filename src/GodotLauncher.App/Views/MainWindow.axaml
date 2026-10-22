@@ -61,7 +61,7 @@
                                        CornerRadius="8" />
                 <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center" VerticalAlignment="Center"
                             Margin="6,0">
-                  <Path Data="{DynamicResource IconStop}" Width="8" Height="8" Stretch="Uniform" Fill="White"
+                  <Path Classes="stop" Data="{DynamicResource IconStop}" Width="8" Height="8" Stretch="Uniform" Fill="White"
                         VerticalAlignment="Center" IsVisible="{Binding Updates.IsDownloading}" />
                   <TextBlock Text="{Binding Updates.ActionText}" FontSize="11" FontWeight="SemiBold"
                              VerticalAlignment="Center" />
