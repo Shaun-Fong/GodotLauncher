@@ -165,7 +165,8 @@ A running executable cannot overwrite itself on Windows, so an update is applied
 for the launcher process id to disappear, unpacks the downloaded archive (Expand-Archive on Windows,
  tar -xf elsewhere), copies the files over the install directory, starts the launcher again and deletes
 the temporary folder and the archive. The About section shows the check result, downloads the asset that
-matches the host platform (win-x64, osx-arm64, ...) with live speed on the button, cancels on a second
+matches the host platform (win-x64, osx-arm64, ...), fills the button background while the label shows
+the live speed, cancels on a second
 click, and installs as soon as the archive is ready. The sidebar version row shows the same button so
 an update can be started from any page. The install folder is probed for write access first: on a read-only location the launcher reports the problem instead
 of leaving a half-replaced directory. Updates are opt-in; nothing is downloaded without the user asking.
