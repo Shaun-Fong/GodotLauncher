@@ -75,12 +75,15 @@ public sealed class Installer
 
             await Task.Run(() => ZipExtractor.Extract(archivePath, staging), cancellationToken).ConfigureAwait(false);
 
-            var executable = ExecutableFinder.Find(staging, _platform)
+            // Mono archives wrap the payload in a folder named after the build;
+            // install its contents directly so every edition shares one layout.
+            var contentRoot = ResolveContentRoot(staging);
+            var executable = ExecutableFinder.Find(contentRoot, _platform)
                 ?? throw new InstallException(
                     $"No Godot editor executable was found inside {Path.GetFileName(archivePath)}.");
 
-            var size = MeasureDirectory(staging);
-            MoveDirectory(staging, installDirectory);
+            var size = MeasureDirectory(contentRoot);
+            MoveDirectory(contentRoot, installDirectory);
 
             return new InstallResult
             {
@@ -100,6 +103,18 @@ public sealed class Installer
         {
             TryDeleteDirectory(staging);
         }
+    }
+
+    /// <summary>
+    /// Returns the extracted payload root. Archives that only contain a single
+    /// top-level folder (the .NET builds) are unwrapped so the executable and
+    /// its data folder land directly in the install directory.
+    /// </summary>
+    private static string ResolveContentRoot(string staging)
+    {
+        var directories = Directory.GetDirectories(staging);
+        var files = Directory.GetFiles(staging);
+        return directories.Length == 1 && files.Length == 0 ? directories[0] : staging;
     }
 
     /// <summary>

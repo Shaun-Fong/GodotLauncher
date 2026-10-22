@@ -104,6 +104,20 @@ public sealed class ExecutableFinderTests
     }
 
     [Fact]
+    public void Find_WindowsSearchesNestedFoldersForDotNetBuilds()
+    {
+        using var temp = new TempDirectory();
+        var inner = Path.Combine(temp.Path, "Godot_v4.8-beta1_mono_win64");
+        Directory.CreateDirectory(Path.Combine(inner, "GodotSharp"));
+        File.WriteAllText(Path.Combine(inner, "Godot_v4.8-beta1_mono_win64.exe"), "gui");
+        File.WriteAllText(Path.Combine(inner, "GodotSharp", "GodotSharp.dll"), "managed");
+
+        Assert.Equal(
+            Path.Combine("Godot_v4.8-beta1_mono_win64", "Godot_v4.8-beta1_mono_win64.exe"),
+            ExecutableFinder.Find(temp.Path, HostPlatform.Windows));
+    }
+
+    [Fact]
     public void Find_ReturnsNullForEmptyDirectory()
     {
         using var temp = new TempDirectory();
@@ -151,6 +165,40 @@ public sealed class InstallerTests
         Assert.Equal("abc", installed.Sha256);
         Assert.True(installer.IsInstalled("4.7.2-stable", GodotEdition.Standard));
         Assert.Empty(Directory.EnumerateDirectories(paths.StagingDirectory));
+    }
+
+    [Fact]
+    public async Task InstallAsync_UnwrapsSingleFolderArchives()
+    {
+        using var temp = new TempDirectory();
+        var paths = AppPaths.CreateFor(temp.Path);
+        paths.EnsureDirectories();
+        var archivePath = Path.Combine(temp.Path, "4.8-beta1_mono_win64.zip");
+        using (var stream = File.Create(archivePath))
+        using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
+        {
+            foreach (var name in new[]
+            {
+                "Godot_v4.8-beta1_mono_win64/Godot_v4.8-beta1_mono_win64.exe",
+                "Godot_v4.8-beta1_mono_win64/GodotSharp/GodotSharp.dll",
+            })
+            {
+                var entry = archive.CreateEntry(name);
+                using var writer = new StreamWriter(entry.Open());
+                writer.Write("payload");
+            }
+        }
+
+        var mono = GodotVersion.Create("4.8", "beta1", new DateOnly(2026, 10, 15));
+        var installer = new Installer(paths, HostPlatform.Windows);
+
+        var result = await installer.InstallAsync(mono, GodotEdition.Mono, CpuArchitecture.X64, archivePath, InstallSource.Official);
+
+        var installed = result.Installed;
+        Assert.Equal("Godot_v4.8-beta1_mono_win64.exe", installed.ExecutableRelativePath);
+        Assert.True(File.Exists(installed.ExecutablePath));
+        Assert.True(File.Exists(Path.Combine(installed.InstallPath, "GodotSharp", "GodotSharp.dll")));
+        Assert.False(Directory.Exists(Path.Combine(installed.InstallPath, "Godot_v4.8-beta1_mono_win64")));
     }
 
     [Fact]
