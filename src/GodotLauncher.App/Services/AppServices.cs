@@ -46,6 +46,24 @@ public sealed class AppServices : INotifyPropertyChanged
         var loaded = SettingsStore.Load().Normalize();
         Settings = loaded;
 
+        // The install root lives in the settings file, so it has to be applied
+        // before anything reads AppPaths.InstallRoot.
+        if (!string.IsNullOrWhiteSpace(loaded.InstallRoot))
+        {
+            var configured = paths.WithInstallRoot(loaded.InstallRoot);
+            try
+            {
+                configured.EnsureDirectories();
+                Paths = configured;
+            }
+            catch (Exception ex) when (IsPathFailure(ex))
+            {
+                log.Error($"Could not use the install location '{configured.InstallRoot}'. Falling back to the default.", ex);
+                Settings = loaded with { InstallRoot = string.Empty };
+                InstallRootError = ex.Message;
+            }
+        }
+
         _localization = LocalizationService.Load((message, error) => log.Error(message, error));
         Loc = _localization.LoadStrings(loaded.Language);
 
@@ -61,9 +79,9 @@ public sealed class AppServices : INotifyPropertyChanged
             ],
             CatalogCache);
 
-        Resolver = new AssetResolver(Settings.MirrorTemplate);
+        Resolver = new AssetResolver();
         Downloader = new HttpDownloader(DownloadHttp);
-        Installer = new Installer(paths);
+        Installer = new Installer(Paths);
         Library = new InstallationLibrary(new InstallRegistry(paths.InstalledFile));
         Projects = new ProjectStore(paths.ProjectsFile);
         Launcher = new EditorLauncher();
@@ -95,7 +113,11 @@ public sealed class AppServices : INotifyPropertyChanged
     /// <summary>Raised when the catalog was loaded from cache or refreshed.</summary>
     public event EventHandler? CatalogChanged;
 
-    public AppPaths Paths { get; }
+    /// <summary>Resolved directories. <see cref="AppPaths.InstallRoot"/> follows the settings.</summary>
+    public AppPaths Paths { get; private set; }
+
+    /// <summary>Set when a configured install location could not be used.</summary>
+    public string? InstallRootError { get; private set; }
 
     public FileLog Log { get; }
 
@@ -120,7 +142,7 @@ public sealed class AppServices : INotifyPropertyChanged
 
     public HttpDownloader Downloader { get; private set; }
 
-    public Installer Installer { get; }
+    public Installer Installer { get; private set; }
 
     public InstallationLibrary Library { get; }
 
@@ -148,6 +170,13 @@ public sealed class AppServices : INotifyPropertyChanged
     /// <summary>Latest catalog shown to the user, cached or fresh.</summary>
     public VersionCatalog? Catalog { get; private set; }
 
+    /// <summary>Test seam: installs a catalog without touching the network.</summary>
+    internal void SetCatalog(VersionCatalog catalog)
+    {
+        Catalog = catalog;
+        CatalogChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     /// <summary>Ids that were added by the most recent successful refresh.</summary>
     public IReadOnlySet<string> NewVersionIds { get; private set; } = new HashSet<string>();
 
@@ -173,6 +202,21 @@ public sealed class AppServices : INotifyPropertyChanged
             return;
         }
 
+        if (!string.Equals(next.InstallRoot, before.InstallRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            if (TryApplyInstallRoot(next.InstallRoot, out var installRootError))
+            {
+                InstallRootError = null;
+            }
+            else
+            {
+                InstallRootError = installRootError;
+                next = next with { InstallRoot = before.InstallRoot };
+            }
+
+            OnPropertyChanged(nameof(InstallRootError));
+        }
+
         Settings = next;
 
         if (next.Theme != before.Theme)
@@ -185,11 +229,6 @@ public sealed class AppServices : INotifyPropertyChanged
             Loc = _localization.LoadStrings(next.Language);
             OnPropertyChanged(nameof(Loc));
             LanguageChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        if (!string.Equals(next.MirrorTemplate, before.MirrorTemplate, StringComparison.Ordinal))
-        {
-            Resolver = new AssetResolver(next.MirrorTemplate);
         }
 
         if (next.Proxy != before.Proxy ||
@@ -216,6 +255,38 @@ public sealed class AppServices : INotifyPropertyChanged
             ScheduleSave();
         }
     }
+
+    /// <summary>
+    /// Moves new installations to another root. Existing editors stay where they are
+    /// because the registry keeps absolute paths.
+    /// </summary>
+    public bool TryApplyInstallRoot(string? installRoot, out string? error)
+    {
+        var candidate = string.IsNullOrWhiteSpace(installRoot)
+            ? AppPaths.CreateFor(Paths.DataDirectory)
+            : Paths.WithInstallRoot(installRoot);
+
+        try
+        {
+            candidate.EnsureDirectories();
+        }
+        catch (Exception ex) when (IsPathFailure(ex))
+        {
+            error = ex.Message;
+            Log.Warn($"Install location '{candidate.InstallRoot}' is not usable: {ex.Message}");
+            return false;
+        }
+
+        Paths = candidate;
+        Installer = new Installer(Paths);
+        error = null;
+        Log.Info($"Install location is now '{Paths.InstallRoot}'.");
+        return true;
+    }
+
+    private static bool IsPathFailure(Exception ex) =>
+        ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException
+            or System.Security.SecurityException;
 
     /// <summary>
     /// Loads the cached catalog without touching the dispatcher. This runs before the first
