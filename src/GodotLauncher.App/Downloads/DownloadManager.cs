@@ -57,6 +57,18 @@ public sealed class DownloadManager : ObservableObject
 
     public bool HasActive => ActiveCount > 0;
 
+    /// <summary>Concurrency limit currently in effect.</summary>
+    internal int MaxConcurrency => _concurrency;
+
+    /// <summary>Number of downloads currently running.</summary>
+    internal int RunningCount => _running;
+
+    /// <summary>
+    /// Test seam: replaces the network pipeline while keeping queueing and
+    /// concurrency behaviour intact.
+    /// </summary>
+    internal Func<DownloadItem, CancellationToken, Task>? Runner { get; set; }
+
     /// <summary>Adds a version to the queue unless it is already queued or running.</summary>
     public DownloadItem Enqueue(GodotVersion version, GodotEdition edition, CpuArchitecture architecture)
     {
@@ -196,6 +208,14 @@ public sealed class DownloadManager : ObservableObject
         var strings = _services.Loc;
         try
         {
+            if (Runner is { } runner)
+            {
+                Dispatch(() => item.SetState(DownloadState.Downloading, strings.Downloads.Downloading));
+                await runner(item, item.Token).ConfigureAwait(false);
+                Dispatch(() => item.Complete(strings));
+                return;
+            }
+
             Dispatch(() => item.SetState(DownloadState.Resolving, strings.Downloads.Preparing));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));

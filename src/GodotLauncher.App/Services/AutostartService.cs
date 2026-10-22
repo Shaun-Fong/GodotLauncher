@@ -18,9 +18,18 @@ public static class AutostartService
     /// <summary>True when autostart can be configured on this platform.</summary>
     public static bool IsSupported => OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS();
 
+    /// <summary>Test seam: observes the requested state instead of touching the operating system.</summary>
+    internal static Action<bool>? ApplyOverride { get; set; }
+
     /// <summary>Creates or removes the autostart entry for the current executable.</summary>
     public static void SetEnabled(bool enabled)
     {
+        if (ApplyOverride is { } apply)
+        {
+            apply(enabled);
+            return;
+        }
+
         if (!IsSupported)
         {
             throw new PlatformNotSupportedException("Autostart is not supported on this platform.");
