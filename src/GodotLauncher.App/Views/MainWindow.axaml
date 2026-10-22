@@ -4,6 +4,7 @@
         xmlns:views="using:GodotLauncher.App.Views"
         xmlns:dl="using:GodotLauncher.App.Downloads"
         xmlns:mvvm="using:GodotLauncher.App.Mvvm"
+             xmlns:controls="using:GodotLauncher.App.Controls"
         x:Class="GodotLauncher.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding AppName}"
@@ -50,16 +51,18 @@
           </Button>
           <Grid ColumnDefinitions="Auto,*" Margin="4,0,0,0" ColumnSpacing="8">
             <TextBlock Classes="caption" Text="{Binding VersionText}" VerticalAlignment="Center" />
-            <Button Grid.Column="1" Height="26" Padding="8,0" HorizontalAlignment="Right" Classes="primary"
+            <Button Grid.Column="1" Width="112" Height="26" Padding="0" HorizontalAlignment="Right" Classes="primary"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                     Command="{Binding Updates.ApplyCommand}" IsVisible="{Binding Updates.CanAct}"
                     ToolTip.Tip="{Binding Updates.StatusText}">
               <Grid>
-                <ProgressBar Minimum="0" Maximum="1" Value="{Binding Updates.Progress}"
-                             IsVisible="{Binding Updates.IsDownloading}"
-                             Height="26" CornerRadius="6" Background="Transparent"
-                             Foreground="{DynamicResource AccentPressedBrush}" />
+                <controls:ProgressFill IsVisible="{Binding Updates.IsDownloading}"
+                                       Progress="{Binding Updates.Progress}"
+                                       CornerRadius="8"
+                                       Track="{DynamicResource AccentSoftBrush}"
+                                       Fill="{DynamicResource AccentHoverBrush}" />
                 <TextBlock Text="{Binding Updates.ActionText}" FontSize="11" FontWeight="SemiBold"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="6,0" />
               </Grid>
             </Button>
           </Grid>

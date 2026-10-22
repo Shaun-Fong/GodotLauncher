@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GodotLauncher.App.ViewModels"
+             xmlns:controls="using:GodotLauncher.App.Controls"
              x:Class="GodotLauncher.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
@@ -133,14 +134,16 @@
               <Button Classes="ghost" Content="{Binding Text.Settings.CheckNow}"
                       Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !Updates.IsChecking}" />
               <Button Width="200" Height="34" Padding="0" Classes="primary"
+                      HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                       Command="{Binding Updates.ApplyCommand}" IsVisible="{Binding Updates.CanAct}">
                 <Grid>
-                  <ProgressBar Minimum="0" Maximum="1" Value="{Binding Updates.Progress}"
-                               IsVisible="{Binding Updates.IsDownloading}"
-                               Height="34" CornerRadius="8" Background="Transparent"
-                               Foreground="{DynamicResource AccentPressedBrush}" />
+                  <controls:ProgressFill IsVisible="{Binding Updates.IsDownloading}"
+                                         Progress="{Binding Updates.Progress}"
+                                         CornerRadius="8"
+                                         Track="{DynamicResource AccentSoftBrush}"
+                                         Fill="{DynamicResource AccentHoverBrush}" />
                   <TextBlock Text="{Binding Updates.ActionText}" HorizontalAlignment="Center"
-                             VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" />
+                             VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Margin="8,0" />
                 </Grid>
               </Button>
             </StackPanel>
