@@ -108,14 +108,16 @@
             <TextBlock Text="{Binding Text.Settings.Proxy}" VerticalAlignment="Center" />
             <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="220" ItemsSource="{Binding ProxyModes}" SelectedItem="{Binding SelectedProxy}" />
           </Grid>
-          <Grid ColumnDefinitions="200,*,Auto">
-            <TextBlock Text="{Binding Text.Settings.ProxyUrl}" VerticalAlignment="Center" />
-            <TextBox Grid.Column="1" Text="{Binding ProxyUrl}" Watermark="http://127.0.0.1:7890" />
-            <Button Grid.Column="2" Classes="ghost" Margin="8,0,0,0" Content="{Binding Text.Common.Save}" Command="{Binding SaveProxyUrlCommand}" />
-          </Grid>
-          <TextBlock Classes="caption" Margin="200,0,0,0" Text="{Binding Text.Settings.ProxyUrlHint}" TextWrapping="Wrap" />
-          <TextBlock Classes="caption danger" Margin="200,2,0,0" Text="{Binding ProxyError}"
-                     IsVisible="{Binding HasProxyError}" TextWrapping="Wrap" />
+          <StackPanel Spacing="10" IsVisible="{Binding IsCustomProxy}">
+            <Grid ColumnDefinitions="200,*,Auto">
+              <TextBlock Text="{Binding Text.Settings.ProxyUrl}" VerticalAlignment="Center" />
+              <TextBox Grid.Column="1" Text="{Binding ProxyUrl}" Watermark="http://127.0.0.1:7890" />
+              <Button Grid.Column="2" Classes="ghost" Margin="8,0,0,0" Content="{Binding Text.Common.Save}" Command="{Binding SaveProxyUrlCommand}" />
+            </Grid>
+            <TextBlock Classes="caption" Margin="200,0,0,0" Text="{Binding Text.Settings.ProxyUrlHint}" TextWrapping="Wrap" />
+            <TextBlock Classes="caption danger" Margin="200,2,0,0" Text="{Binding ProxyError}"
+                       IsVisible="{Binding HasProxyError}" TextWrapping="Wrap" />
+          </StackPanel>
         </StackPanel>
       </Border>
 
