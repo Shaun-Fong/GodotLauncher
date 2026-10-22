@@ -69,19 +69,6 @@ public sealed class AssetResolverTests
     }
 
     [Fact]
-    public void MirrorTemplate_IsInsertedBeforeOfficialCandidates()
-    {
-        var resolver = new AssetResolver("https://mirror.example/godot/{versionId}/{fileName}");
-        var candidates = resolver.GetCandidates(Stable, GodotEdition.Standard, CpuArchitecture.X64, HostPlatform.Windows);
-
-        Assert.Equal(2, candidates.Count);
-        Assert.Equal(
-            "https://mirror.example/godot/4.7.2-stable/Godot_v4.7.2-stable_win64.exe.zip",
-            candidates[0].DownloadUri.AbsoluteUri);
-        Assert.StartsWith(AssetResolver.OfficialEndpoint, candidates[0].FallbackUri!.AbsoluteUri);
-    }
-
-    [Fact]
     public async Task ResolveAsync_ProbesAndReturnsSize()
     {
         var handler = new StubHttpHandler(request =>

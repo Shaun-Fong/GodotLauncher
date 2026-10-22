@@ -74,9 +74,9 @@ and drops entries without a usable name.
 
 ## Downloads and installation
 
-`AssetResolver` turns a version, edition and architecture into ordered candidate URLs: a user mirror
-template first (if configured), then `downloads.godotengine.org` with the official platform slug, then
-the matching `godot-builds` GitHub release asset. Candidate slugs include both current and legacy names
+`AssetResolver` turns a version, edition and architecture into ordered candidate URLs:
+`downloads.godotengine.org` with the official platform slug first, then the matching
+`godot-builds` GitHub release asset. Candidate slugs include both current and legacy names
 (`win64.exe.zip`, `windows_arm64.exe.zip`, `linux.x86_64.zip`, `x11.64.zip`, `macos.universal.zip`,
 `osx.universal.zip`, …) and every candidate is probe-checked with `HEAD` before use.
 
@@ -121,7 +121,12 @@ quit. `last_launched` is written asynchronously.
   dialog host. Pages are view models created once; their views are created on first navigation. The
   banner only appears for release channels whose notification setting is enabled.
 - `DownloadManager` runs at most `concurrent_downloads` jobs (1–4, default 2) from a FIFO queue. Items
-  are deduplicated per version/edition/architecture and survive cancellation and retry.
+  are deduplicated per version/edition/architecture and survive cancellation and retry. Changing the
+  setting applies to the running queue immediately.
+- The install location in Settings is applied to `AppPaths.InstallRoot` when it is saved: new editors
+  go to `<root>/std` and `<root>/dotnet`, while existing installations keep their absolute paths. An
+  unusable folder (for example a file path or a protected directory) is rejected, the previous root
+  stays active and the settings page explains why. The default root is the data directory.
 - `TrayService` builds a native tray menu (show, launch default, recent five, refresh, settings, exit)
   and rebuilds it when the language, settings or installation list changes. If the platform has no tray,
   closing the window quits instead.

@@ -66,9 +66,6 @@ public sealed record LauncherSettings
     /// <summary>Optional custom installation root; empty means the default.</summary>
     public string InstallRoot { get; init; } = string.Empty;
 
-    /// <summary>Optional download mirror template with <c>{slug}</c> style placeholders.</summary>
-    public string MirrorTemplate { get; init; } = string.Empty;
-
     /// <summary>Proxy selection for catalog, download and update requests.</summary>
     public ProxyMode Proxy { get; init; } = ProxyMode.System;
 
@@ -112,7 +109,6 @@ public sealed record LauncherSettings
         {
             Language = language,
             InstallRoot = InstallRoot?.Trim() ?? string.Empty,
-            MirrorTemplate = MirrorTemplate?.Trim() ?? string.Empty,
             ProxyUrl = ProxyUrl?.Trim() ?? string.Empty,
             ConcurrentDownloads = Math.Clamp(ConcurrentDownloads, 1, 4),
             RefreshIntervalHours = Math.Clamp(RefreshIntervalHours, 0, 168),

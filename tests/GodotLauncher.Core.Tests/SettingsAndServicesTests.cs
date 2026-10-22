@@ -22,7 +22,6 @@ public sealed class SettingsStoreTests
             LaunchWithConsole = true,
             Autostart = true,
             InstallRoot = @"D:\Godot Editors",
-            MirrorTemplate = "https://mirror.example/{versionId}/{fileName}",
             ConcurrentDownloads = 3,
             RefreshIntervalHours = 12,
             ShowOlderVersions = true,

@@ -42,12 +42,6 @@ public sealed class AssetResolver
     /// <summary>Root of the GitHub release downloads.</summary>
     public const string GitHubReleaseRoot = "https://github.com/godotengine/godot-builds/releases/download";
 
-    private readonly string? _mirrorTemplate;
-
-    /// <summary>Creates a resolver that can optionally consult a mirror first.</summary>
-    public AssetResolver(string? mirrorTemplate = null) =>
-        _mirrorTemplate = string.IsNullOrWhiteSpace(mirrorTemplate) ? null : mirrorTemplate.Trim();
-
     /// <summary>Ordered slugs for the combination, most likely first.</summary>
     public static IReadOnlyList<string> GetSlugs(GodotEdition edition, CpuArchitecture architecture, HostPlatform platform)
     {
@@ -121,27 +115,6 @@ public sealed class AssetResolver
                 DownloadUri = BuildOfficialUri(version, platform, architecture, slug),
                 FallbackUri = BuildGitHubUri(version, slug),
             });
-        }
-
-        if (_mirrorTemplate is { Length: > 0 } template)
-        {
-            foreach (var slug in slugs)
-            {
-                if (TryBuildMirrorUri(template, version, edition, architecture, platform, slug, out var mirrorUri))
-                {
-                    // The mirror is only useful if it is preferred over the official host.
-                    candidates.Insert(0, new DownloadAsset
-                    {
-                        VersionId = version.Id,
-                        Edition = edition,
-                        Architecture = architecture,
-                        Platform = platform,
-                        Slug = slug,
-                        DownloadUri = mirrorUri,
-                        FallbackUri = BuildOfficialUri(version, platform, architecture, slug),
-                    });
-                }
-            }
         }
 
         return candidates;
@@ -254,29 +227,5 @@ public sealed class AssetResolver
     {
         var versionId = Uri.EscapeDataString(version.Id);
         return new Uri($"{GitHubReleaseRoot}/{versionId}/Godot_v{versionId}_{slug}");
-    }
-
-    private static bool TryBuildMirrorUri(
-        string template,
-        GodotVersion version,
-        GodotEdition edition,
-        CpuArchitecture architecture,
-        HostPlatform platform,
-        string slug,
-        out Uri uri)
-    {
-        uri = null!;
-        var fileName = $"Godot_v{version.Id}_{slug}";
-        var expanded = template
-            .Replace("{versionId}", version.Id, StringComparison.OrdinalIgnoreCase)
-            .Replace("{version}", version.Name, StringComparison.OrdinalIgnoreCase)
-            .Replace("{flavor}", version.Flavor, StringComparison.OrdinalIgnoreCase)
-            .Replace("{slug}", slug, StringComparison.OrdinalIgnoreCase)
-            .Replace("{fileName}", fileName, StringComparison.OrdinalIgnoreCase)
-            .Replace("{edition}", edition.ToFolderName(), StringComparison.OrdinalIgnoreCase)
-            .Replace("{arch}", architecture.ToDisplayName(), StringComparison.OrdinalIgnoreCase)
-            .Replace("{platform}", platform.ToDisplayName().ToLowerInvariant(), StringComparison.OrdinalIgnoreCase);
-
-        return Uri.TryCreate(expanded, UriKind.Absolute, out uri!);
     }
 }

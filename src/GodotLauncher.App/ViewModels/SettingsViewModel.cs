@@ -109,7 +109,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private string _installRoot = string.Empty;
 
     [ObservableProperty]
-    private string _mirrorTemplate = string.Empty;
+    private string _installRootError = string.Empty;
+
+    public bool HasInstallRootError => !string.IsNullOrEmpty(InstallRootError);
+
+    partial void OnInstallRootErrorChanged(string value) => OnPropertyChanged(nameof(HasInstallRootError));
 
     [ObservableProperty]
     private LabeledOption<ProxyMode>? _selectedProxy;
@@ -326,18 +330,16 @@ public sealed partial class SettingsViewModel : ViewModelBase
             return;
         }
 
-        Apply(settings => settings with { InstallRoot = InstallRoot.Trim() });
-    }
+        var requested = InstallRoot.Trim();
+        Apply(settings => settings with { InstallRoot = requested });
 
-    [RelayCommand]
-    private void SaveMirrorTemplate()
-    {
-        if (_loading)
+        // The service falls back to the previous root when the folder cannot be
+        // created, so surface that instead of leaving a stale path in the box.
+        InstallRootError = string.IsNullOrEmpty(Services.InstallRootError) ? string.Empty : L.Settings.InstallRootInvalid;
+        if (!string.IsNullOrEmpty(InstallRootError))
         {
-            return;
+            InstallRoot = Services.Settings.InstallRoot;
         }
-
-        Apply(settings => settings with { MirrorTemplate = MirrorTemplate.Trim() });
     }
 
     [RelayCommand]
@@ -392,7 +394,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         }
 
         InstallRoot = folder;
-        Apply(settings => settings with { InstallRoot = folder });
+        SaveInstallRoot();
     }
 
     [RelayCommand]
@@ -478,7 +480,6 @@ public sealed partial class SettingsViewModel : ViewModelBase
         NotifyBeta = settings.NotifyBeta;
         NotifyDev = settings.NotifyDev;
         InstallRoot = settings.InstallRoot;
-        MirrorTemplate = settings.MirrorTemplate;
         ProxyUrl = settings.ProxyUrl;
         _loading = false;
     }

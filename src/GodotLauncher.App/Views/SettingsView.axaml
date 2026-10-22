@@ -62,14 +62,8 @@
             <TextBlock Text="{Binding Text.Settings.Concurrent}" VerticalAlignment="Center" />
             <ComboBox Grid.Column="1" HorizontalAlignment="Left" MinWidth="120" ItemsSource="{Binding ParallelDownloadOptions}" SelectedItem="{Binding SelectedParallelDownloads}" />
           </Grid>
-          <Grid ColumnDefinitions="200,*">
-            <TextBlock Text="{Binding Text.Settings.Mirror}" VerticalAlignment="Center" />
-            <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
-              <TextBox Text="{Binding MirrorTemplate}" Watermark="{Binding Text.Settings.MirrorHint}" />
-              <Button Grid.Column="1" Margin="6,0,0,0" Content="{Binding Text.Common.Save}" Command="{Binding SaveMirrorTemplateCommand}" />
-            </Grid>
-          </Grid>
-          <TextBlock Classes="caption" Margin="200,0,0,0" TextWrapping="Wrap" Text="{Binding Text.Settings.MirrorHint}" />
+          <TextBlock Classes="caption danger" Margin="200,0,0,0" TextWrapping="Wrap"
+                     IsVisible="{Binding HasInstallRootError}" Text="{Binding InstallRootError}" />
         </StackPanel>
       </Border>
 

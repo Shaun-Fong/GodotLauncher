@@ -73,7 +73,6 @@ public sealed class SettingsStore
 
         builder.AppendLine($"[{DownloadsSection}]");
         builder.AppendLine($"install_root = {TomlDocument.Quote(settings.InstallRoot)}");
-        builder.AppendLine($"mirror_template = {TomlDocument.Quote(settings.MirrorTemplate)}");
         builder.AppendLine($"concurrent_downloads = {settings.ConcurrentDownloads.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
         builder.AppendLine();
 
@@ -128,7 +127,6 @@ public sealed class SettingsStore
             LaunchWithConsole = document.TryGetBool(GeneralSection, "launch_with_console", out var console) && console,
             Autostart = document.TryGetBool(GeneralSection, "autostart", out var autostart) && autostart,
             InstallRoot = document.TryGetString(DownloadsSection, "install_root", out var installRoot) ? installRoot : string.Empty,
-            MirrorTemplate = document.TryGetString(DownloadsSection, "mirror_template", out var mirror) ? mirror : string.Empty,
             Proxy = document.TryGetEnum<ProxyMode>(NetworkSection, "proxy", out var proxy) ? proxy : defaults.Proxy,
             ProxyUrl = document.TryGetString(NetworkSection, "proxy_url", out var proxyUrl) ? proxyUrl : string.Empty,
             ConcurrentDownloads = document.TryGetInt(DownloadsSection, "concurrent_downloads", out var concurrent)

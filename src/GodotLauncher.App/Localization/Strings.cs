@@ -355,13 +355,11 @@ public sealed class SettingsStrings(IReadOnlyDictionary<string, string> values) 
 
     public string InstallRootHint => Get(nameof(InstallRootHint));
 
+    public string InstallRootInvalid => Get(nameof(InstallRootInvalid));
+
     public string Browse => Get(nameof(Browse));
 
     public string Concurrent => Get(nameof(Concurrent));
-
-    public string Mirror => Get(nameof(Mirror));
-
-    public string MirrorHint => Get(nameof(MirrorHint));
 
     public string Updates => Get(nameof(Updates));
 

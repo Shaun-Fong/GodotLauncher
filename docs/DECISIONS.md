@@ -36,9 +36,8 @@ Measured on the development machine:
   down.
 
 Consequences: asset digests are usually unknown, so verification falls back to the final byte count
-(the download is reported as verified only when a digest exists). A user-configured mirror template is
-supported for restricted networks. If optional GitHub tokens are added later, digests and release
-metadata can be fetched without hitting the anonymous limit.
+(the download is reported as verified only when a digest exists). If optional GitHub tokens are added
+later, digests and release metadata can be fetched without hitting the anonymous limit.
 
 The `versions.yml` parser emits nested `releases:` entries as their own versions. The upstream file
 nests `dev7`, `rc1`, `beta5` entries under a version, and those names are exactly the download ids; only
@@ -142,12 +141,26 @@ than silently relaxing the target.
 
 ## Packaging and distribution
 
-GitHub Actions publishes self-contained single-file ReadyToRun archives for `win-x64`, `linux-x64`,
-`osx-x64` and `osx-arm64` (`build.yml` on every push, `release.yml` on `v*` tags with `SHA256SUMS.txt`
-and generated release notes). Self-contained is the default because a launcher that requires a .NET
-runtime install fails the "just works" requirement. The archives are not code signed yet; signing
-certificates are a release-engineering task that needs accounts and secrets, so it is listed as a known
-limitation instead of being faked.
+Every push and pull request runs only the test suites (`build.yml`); packaging and publishing happen
+when a version tag is pushed (`release.yml`), which keeps commit checks fast and makes release builds a
+deliberate action. Releases are self-contained single-file ReadyToRun archives for `win-x64`,
+`linux-x64`, `osx-x64` and `osx-arm64`, with `SHA256SUMS.txt` and generated release notes.
+Self-contained is the default because a launcher that requires a .NET runtime install fails the "just
+works" requirement. The archives are not code signed yet; signing certificates are a release-engineering
+task that needs accounts and secrets, so it is listed as a known limitation instead of being faked.
+
+## Settings that move data are applied immediately
+
+The install location is not just a stored preference: saving it rebuilds `AppPaths` and the installer,
+so the next download lands in the chosen folder without a restart. Because a bad path would otherwise
+only show up later as a failed install, the service probes the folder by creating it before accepting
+the value; on failure it keeps the previous root and the settings page shows an error next to the field.
+Existing installations are never moved, since the registry stores absolute paths.
+
+The same rule covers the other switches: language and theme apply on change, the parallel download
+limit is pushed into the running queue, proxy changes rebuild the HTTP clients, and notification
+channels are consulted when the banner is composed. `tests/GodotLauncher.App.Tests` asserts each of
+these, so a switch that stops having an effect fails CI.
 
 ## Known gaps
 
