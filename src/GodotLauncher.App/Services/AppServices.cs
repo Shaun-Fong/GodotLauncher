@@ -237,6 +237,13 @@ public sealed class AppServices : INotifyPropertyChanged
     /// </summary>
     public void LoadInstalledBlocking(CancellationToken cancellationToken = default)
     {
+        // Older launchers put .NET editors under mono/; migrate before the
+        // registry is read so records can be repaired in the same pass.
+        if (Installer.MigrateLegacyEditionFolders())
+        {
+            Log.Info("Moved .NET editors from mono/ to dotnet/.");
+        }
+
         Task.Run(() => Library.LoadAsync(cancellationToken), cancellationToken)
             .GetAwaiter()
             .GetResult();

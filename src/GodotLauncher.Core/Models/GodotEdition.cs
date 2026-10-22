@@ -19,6 +19,13 @@ public static class GodotEditionExtensions
 
     /// <summary>Name of the install subdirectory that holds this edition.</summary>
     public static string ToFolderName(this GodotEdition edition) =>
+        edition == GodotEdition.Mono ? "dotnet" : "std";
+
+    /// <summary>
+    /// Folder name used by launchers before 0.4.1 for the .NET edition. Only kept so
+    /// existing installations can be moved to <c>dotnet</c> at startup.
+    /// </summary>
+    public static string ToLegacyFolderName(this GodotEdition edition) =>
         edition == GodotEdition.Mono ? "mono" : "std";
 }
 

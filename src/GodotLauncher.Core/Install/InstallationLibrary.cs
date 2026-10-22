@@ -39,6 +39,28 @@ public sealed class InstallationLibrary
         try
         {
             var items = loaded.ToList();
+            var repaired = false;
+
+            // Launchers before 0.4.1 installed the .NET edition under mono/; the
+            // startup migration moves that folder to dotnet/, so records that still
+            // point at the old path are rewritten here.
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                if (string.IsNullOrEmpty(item.InstallPath) || Directory.Exists(item.InstallPath))
+                {
+                    continue;
+                }
+
+                var candidate = RepairLegacyPath(item.InstallPath);
+                if (candidate is null || !Directory.Exists(candidate))
+                {
+                    continue;
+                }
+
+                items[i] = item with { InstallPath = candidate };
+                repaired = true;
+            }
 
             // Older libraries could be saved without a default editor; promote
             // the most recent one so launching from the tray stays predictable.
@@ -52,6 +74,10 @@ public sealed class InstallationLibrary
             }
 
             _items = [.. items];
+            if (repaired)
+            {
+                await _registry.SaveAsync(_items, cancellationToken).ConfigureAwait(false);
+            }
         }
         finally
         {
@@ -59,6 +85,20 @@ public sealed class InstallationLibrary
         }
 
         Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private static string? RepairLegacyPath(string installPath)
+    {
+        var segments = installPath.Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]);
+        var index = Array.FindIndex(segments, segment =>
+            string.Equals(segment, GodotEdition.Mono.ToLegacyFolderName(), StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
+        {
+            return null;
+        }
+
+        segments[index] = GodotEdition.Mono.ToFolderName();
+        return string.Join(Path.DirectorySeparatorChar, segments);
     }
 
     /// <summary>Adds a record, replacing any record with the same id.</summary>

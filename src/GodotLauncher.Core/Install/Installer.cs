@@ -29,9 +29,35 @@ public sealed class Installer
         _platform = platform ?? HostPlatformExtensions.Current;
     }
 
-    /// <summary>Directory a version installs into: <c>{root}/{std|mono}/{version-id}</c>.</summary>
+    /// <summary>Directory a version installs into: <c>{root}/{std|dotnet}/{version-id}</c>.</summary>
     public string GetInstallDirectory(string versionId, GodotEdition edition) =>
         Path.Combine(_paths.InstallRoot, edition.ToFolderName(), versionId);
+
+    /// <summary>
+    /// Moves .NET editors installed by older launchers from <c>mono/</c> into their own
+    /// <c>dotnet/</c> directory so the two editions never share a folder.
+    /// </summary>
+    /// <returns>True when a legacy directory was moved.</returns>
+    public bool MigrateLegacyEditionFolders()
+    {
+        var legacy = Path.Combine(_paths.InstallRoot, GodotEdition.Mono.ToLegacyFolderName());
+        var current = Path.Combine(_paths.InstallRoot, GodotEdition.Mono.ToFolderName());
+        if (!Directory.Exists(legacy) || Directory.Exists(current))
+        {
+            return false;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(_paths.InstallRoot);
+            Directory.Move(legacy, current);
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     /// <summary>Returns true when an installation directory already exists.</summary>
     public bool IsInstalled(string versionId, GodotEdition edition) =>

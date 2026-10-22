@@ -202,6 +202,71 @@ public sealed class InstallerTests
     }
 
     [Fact]
+    public void GetInstallDirectory_KeepsEditionsInSeparateFolders()
+    {
+        using var temp = new TempDirectory();
+        var paths = AppPaths.CreateFor(temp.Path);
+        var installer = new Installer(paths, HostPlatform.Windows);
+
+        Assert.Equal(Path.Combine(paths.InstallRoot, "std", "4.8-beta1"),
+            installer.GetInstallDirectory("4.8-beta1", GodotEdition.Standard));
+        Assert.Equal(Path.Combine(paths.InstallRoot, "dotnet", "4.8-beta1"),
+            installer.GetInstallDirectory("4.8-beta1", GodotEdition.Mono));
+    }
+
+    [Fact]
+    public async Task InstallAsync_KeepsStandardAndDotNetEditionsSideBySide()
+    {
+        using var temp = new TempDirectory();
+        var paths = AppPaths.CreateFor(temp.Path);
+        paths.EnsureDirectories();
+        var installer = new Installer(paths, HostPlatform.Windows);
+
+        var standard = await installer.InstallAsync(
+            Stable, GodotEdition.Standard, CpuArchitecture.X64, CreateWindowsArchive(temp.Path), InstallSource.Official);
+
+        var monoArchive = Path.Combine(temp.Path, "4.7.2-stable_mono_win64.zip");
+        using (var stream = File.Create(monoArchive))
+        using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
+        {
+            foreach (var name in new[] { "Godot_v4.7.2-stable_mono_win64.exe", "GodotSharp/GodotSharp.dll" })
+            {
+                var entry = archive.CreateEntry(name);
+                using var writer = new StreamWriter(entry.Open());
+                writer.Write("payload");
+            }
+        }
+
+        var mono = await installer.InstallAsync(
+            Stable, GodotEdition.Mono, CpuArchitecture.X64, monoArchive, InstallSource.Official);
+
+        Assert.NotEqual(standard.Installed.InstallPath, mono.Installed.InstallPath);
+        Assert.Equal(Path.Combine(paths.InstallRoot, "std", "4.7.2-stable"), standard.Installed.InstallPath);
+        Assert.Equal(Path.Combine(paths.InstallRoot, "dotnet", "4.7.2-stable"), mono.Installed.InstallPath);
+        Assert.True(File.Exists(standard.Installed.ExecutablePath));
+        Assert.True(File.Exists(mono.Installed.ExecutablePath));
+    }
+
+    [Fact]
+    public void MigrateLegacyEditionFolders_MovesMonoIntoDotNet()
+    {
+        using var temp = new TempDirectory();
+        var paths = AppPaths.CreateFor(temp.Path);
+        paths.EnsureDirectories();
+        var legacy = Path.Combine(paths.InstallRoot, "mono", "4.8-beta1");
+        Directory.CreateDirectory(legacy);
+        File.WriteAllText(Path.Combine(legacy, "Godot_v4.8-beta1_mono_win64.exe"), "editor");
+        var installer = new Installer(paths, HostPlatform.Windows);
+
+        Assert.True(installer.MigrateLegacyEditionFolders());
+
+        Assert.False(Directory.Exists(Path.Combine(paths.InstallRoot, "mono")));
+        Assert.True(File.Exists(Path.Combine(
+            paths.InstallRoot, "dotnet", "4.8-beta1", "Godot_v4.8-beta1_mono_win64.exe")));
+        Assert.False(installer.MigrateLegacyEditionFolders());
+    }
+
+    [Fact]
     public async Task InstallAsync_FailsWhenTheArchiveHasNoEditor()
     {
         using var temp = new TempDirectory();
@@ -326,6 +391,34 @@ public sealed class InstallationLibraryTests
         Assert.Equal(2, reloaded.Count);
         Assert.Equal("4.3-stable|mono|x64", reloaded.FindDefault()!.Id);
         Assert.Single(reloaded.Items, item => item.IsDefault);
+    }
+
+    [Fact]
+    public async Task Library_RepairsRecordsThatStillPointAtTheMonoFolder()
+    {
+        using var temp = new TempDirectory();
+        var (library, registry) = CreateLibrary(temp);
+        await library.LoadAsync();
+
+        var moved = Path.Combine(temp.Path, "dotnet", "4.8-beta1");
+        Directory.CreateDirectory(moved);
+        var legacyPath = Path.Combine(temp.Path, "mono", "4.8-beta1");
+        var record = InstalledVersion.Create(
+            "4.8-beta1",
+            GodotEdition.Mono,
+            CpuArchitecture.X64,
+            "Godot 4.8 Beta1",
+            legacyPath,
+            "Godot_v4.8-beta1_mono_win64.exe",
+            2048,
+            InstallSource.Official);
+        await library.AddOrUpdateAsync(record);
+
+        var reloaded = new InstallationLibrary(registry);
+        await reloaded.LoadAsync();
+
+        var item = Assert.Single(reloaded.Items);
+        Assert.Equal(moved, item.InstallPath);
     }
 
     [Fact]
