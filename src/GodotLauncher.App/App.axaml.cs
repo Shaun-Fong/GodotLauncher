@@ -129,7 +129,7 @@ public partial class App : Application
             DispatcherPriority.Background);
 
         Dispatcher.UIThread.Post(
-            () => _ = CheckForLauncherUpdateAsync(services),
+            () => _ = viewModel.Updates.CheckAsync(),
             DispatcherPriority.ApplicationIdle);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(30) };
@@ -137,18 +137,6 @@ public partial class App : Application
         _refreshTimer.Start();
 
         base.OnFrameworkInitializationCompleted();
-    }
-
-    private static async Task CheckForLauncherUpdateAsync(AppServices services)
-    {
-        try
-        {
-            await services.CheckForUpdatesAsync();
-        }
-        catch (Exception exception)
-        {
-            services.Log.Warn($"Could not check for launcher updates: {exception.Message}");
-        }
     }
 
     private static void RefreshWhenDue(AppServices services)

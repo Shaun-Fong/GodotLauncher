@@ -149,9 +149,10 @@ public static class UpdateInstaller
         builder.AppendLine(CultureInfo.InvariantCulture, $"start \"\" \"%TARGET%\\{executableName}\"");
         builder.AppendLine("rmdir /s /q \"%STAGING%\"");
         builder.AppendLine("del \"%ARCHIVE%\"");
-        builder.AppendLine("del \"%~f0\"");
-        builder.AppendLine("cd /d \"%TEMP%\"");
-        builder.AppendLine("rmdir \"%FOLDER%\"");
+        // The script cannot delete the folder it runs from. Spawn a short-lived helper that waits for
+        // this script to exit, then removes the whole folder (including the script itself).
+        builder.AppendLine("start \"\" /min cmd /c \"timeout /t 2 /nobreak >nul & rmdir /s /q \"\"%~dp0.\"\"\"");
+        builder.AppendLine("exit /b 0");
         File.WriteAllText(script, builder.ToString(), new UTF8Encoding(false));
         return script;
     }

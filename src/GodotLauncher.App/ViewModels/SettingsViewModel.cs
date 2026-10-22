@@ -25,11 +25,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private readonly DispatcherTimer _savedTimer;
 
     private bool _loading;
-    private string? _updateArchivePath;
-    private string? _updateVersionTag;
-    private CancellationTokenSource? _updateDownloadCts;
 
-    public SettingsViewModel(AppServices services)
+    public SettingsViewModel(AppServices services, UpdateViewModel updates)
         : base(services)
     {
         Themes = [];
@@ -41,7 +38,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         RefreshIntervals = [];
         BuildOptions();
         Load();
-        services.PropertyChanged += OnServicePropertyChanged;
+        Updates = updates;
 
         // "Settings saved" is only useful right after a change, so it fades away.
         _savedTimer = new DispatcherTimer { Interval = SavedTextDuration };
@@ -51,6 +48,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
             SavedText = string.Empty;
         };
     }
+
+    /// <summary>Shared self-update state, also rendered by the sidebar badge.</summary>
+    public UpdateViewModel Updates { get; }
 
     public ObservableCollection<LabeledOption<ThemeMode>> Themes { get; }
 
@@ -127,54 +127,6 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _savedText = string.Empty;
 
-    [ObservableProperty]
-    private string _updateStatus = string.Empty;
-
-    [ObservableProperty]
-    private bool _isCheckingUpdates;
-
-    [ObservableProperty]
-    private bool _hasUpdate;
-
-    [ObservableProperty]
-    private bool _isUpdateReady;
-
-    /// <summary>True while the update archive is being downloaded.</summary>
-    [ObservableProperty]
-    private bool _isUpdateDownloading;
-
-    /// <summary>Download progress from 0 to 1, painted as the button fill.</summary>
-    [ObservableProperty]
-    private double _updateProgress;
-
-    /// <summary>Label of the update button: action name or live download speed.</summary>
-    [ObservableProperty]
-    private string _updateActionText = string.Empty;
-
-    /// <summary>True when the update button should be offered at all.</summary>
-    public bool CanUpdate => HasUpdate || IsUpdateDownloading;
-
-    partial void OnHasUpdateChanged(bool value)
-    {
-        OnPropertyChanged(nameof(CanUpdate));
-        UpdateUpdateActionText();
-    }
-
-    partial void OnIsUpdateDownloadingChanged(bool value)
-    {
-        OnPropertyChanged(nameof(CanUpdate));
-        UpdateUpdateActionText();
-    }
-
-    private void UpdateUpdateActionText()
-    {
-        if (IsUpdateDownloading)
-        {
-            return;
-        }
-
-        UpdateActionText = HasUpdate ? L.Settings.DownloadUpdate : L.Settings.InstallUpdate;
-    }
     public string VersionText => $"Godot Launcher {AppServices.AppVersion}";
 
     public string DataFolder => Services.Paths.DataDirectory;
@@ -394,11 +346,6 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task CheckUpdatesAsync()
     {
-        if (IsCheckingUpdates)
-        {
-            return;
-        }
-
         // Apply a proxy typed into the box but not saved yet: users expect the
         // check button to use what they see on screen.
         if (!_loading)
@@ -408,7 +355,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
             if (proxy == ProxyMode.Custom && ProxySupport.ParseProxy(url) is null)
             {
                 ProxyError = L.Settings.ProxyInvalid;
-                UpdateStatus = L.Settings.ProxyInvalid;
+                Updates.StatusText = L.Settings.ProxyInvalid;
                 return;
             }
 
@@ -416,220 +363,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
             Services.UpdateSettings(settings => settings with { Proxy = proxy, ProxyUrl = url }, save: false);
         }
 
-        IsCheckingUpdates = true;
-        UpdateStatus = L.Settings.CheckingUpdates;
-        try
-        {
-            var release = await Services.CheckForUpdatesAsync();
-            HasUpdate = release is not null;
-            if (release is null)
-            {
-                UpdateStatus = L.Settings.UpToDate;
-            }
-            else
-            {
-                UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateAvailable, release.Tag);
-            }
-        }
-        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
-        {
-            Services.Log.Warn($"GitHub rate limit reached while checking for launcher updates: {exception.Message}");
-            HasUpdate = false;
-            UpdateStatus = L.Settings.UpdateRateLimited;
-        }
-        catch (Exception exception)
-        {
-            Services.Log.Warn($"Could not check for launcher updates: {exception.Message}");
-            HasUpdate = false;
-            UpdateStatus = DescribeUpdateFailure(exception);
-        }
-        finally
-        {
-            IsCheckingUpdates = false;
-        }
-    }
-
-    private string DescribeUpdateFailure(Exception exception)
-    {
-        var detail = exception.Message;
-        if (exception.InnerException is { } inner
-            && !detail.Contains(inner.Message, StringComparison.Ordinal))
-        {
-            detail = $"{detail} {inner.Message}";
-        }
-
-        detail = detail.Trim();
-        if (detail.Length > 160)
-        {
-            detail = detail[..160] + "...";
-        }
-
-        return string.IsNullOrEmpty(detail)
-            ? L.Settings.UpdateCheckFailed
-            : $"{L.Settings.UpdateCheckFailed} {detail}";
-    }
-
-    /// <summary>
-    /// Single update button: starts the download, shows live speed on its face,
-    /// cancels when clicked again and installs as soon as the archive is ready.
-    /// The command allows concurrent executions so the second click can reach the
-    /// cancel branch while the first download is still running.
-    /// </summary>
-    [RelayCommand(AllowConcurrentExecutions = true)]
-    private async Task UpdateActionAsync()
-    {
-        if (IsUpdateDownloading)
-        {
-            _updateDownloadCts?.Cancel();
-            return;
-        }
-
-        // A downloaded archive that could not be applied (for example because the
-        // install folder is read-only) retries the install instead of downloading.
-        if (IsUpdateReady && !string.IsNullOrEmpty(_updateArchivePath))
-        {
-            InstallUpdate();
-            return;
-        }
-
-        var release = Services.AvailableUpdate;
-        var asset = release is null ? null : PickUpdateAsset(release);
-        if (asset is null)
-        {
-            return;
-        }
-
-        _updateDownloadCts = new CancellationTokenSource();
-        var token = _updateDownloadCts.Token;
-        IsUpdateDownloading = true;
-        UpdateProgress = 0;
-        UpdateActionText = L.Settings.UpdatePreparing;
-        UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateAvailable, release!.Tag);
-
-        var progress = new Progress<DownloadProgress>(report =>
-        {
-            UpdateProgress = report.Fraction ?? 0;
-            UpdateActionText = string.IsNullOrWhiteSpace(report.SpeedText)
-                ? L.Settings.UpdatePreparing
-                : report.SpeedText;
-        });
-
-        try
-        {
-            var path = await Services.DownloadUpdateAsync(asset, progress, token);
-            _updateArchivePath = path;
-            _updateVersionTag = release.Tag;
-            UpdateProgress = 1;
-            UpdateActionText = L.Settings.UpdateInstalling;
-            UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateReady, release.Tag);
-            IsUpdateReady = true;
-            InstallUpdate();
-
-            // Reaching this point means the restart script could not be started.
-            IsUpdateDownloading = false;
-            UpdateProgress = 0;
-            UpdateActionText = L.Settings.InstallUpdate;
-        }
-        catch (OperationCanceledException)
-        {
-            IsUpdateDownloading = false;
-            UpdateProgress = 0;
-            UpdateStatus = L.Settings.UpdateCancelled;
-            Services.Log.Info("Launcher update download cancelled.");
-        }
-        catch (Exception exception)
-        {
-            IsUpdateDownloading = false;
-            UpdateProgress = 0;
-            Services.Log.Error("Could not download the launcher update.", exception);
-            UpdateStatus = DescribeUpdateFailure(exception);
-        }
-        finally
-        {
-            _updateDownloadCts?.Dispose();
-            _updateDownloadCts = null;
-        }
-    }
-
-    [RelayCommand]
-    private void InstallUpdate()
-    {
-        if (string.IsNullOrEmpty(_updateArchivePath))
-        {
-            return;
-        }
-
-        var executable = Environment.ProcessPath;
-        if (string.IsNullOrEmpty(executable))
-        {
-            UpdateStatus = L.Settings.UpdateInstallFailed;
-            Services.Log.Warn("Could not install the launcher update: unknown executable path.");
-            return;
-        }
-
-        if (!UpdateInstaller.TryApply(_updateArchivePath, executable, Services.Log, out var error))
-        {
-            UpdateStatus = L.Settings.UpdateInstallFailed;
-            if (!string.IsNullOrEmpty(error))
-            {
-                Services.Log.Warn($"Could not install the launcher update: {error}");
-            }
-
-            return;
-        }
-
-        Services.Log.Info($"Restarting to install launcher update {_updateVersionTag ?? "(unknown)"}.");
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.Shutdown();
-        }
-        else
-        {
-            Environment.Exit(0);
-        }
-    }
-
-    private void OnServicePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
-    {
-        if (args.PropertyName != nameof(AppServices.AvailableUpdate) || _loading)
-        {
-            return;
-        }
-
-        var release = Services.AvailableUpdate;
-        if (release is null || IsUpdateReady || IsCheckingUpdates)
-        {
-            return;
-        }
-
-        HasUpdate = true;
-        UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateAvailable, release.Tag);
-    }
-
-    private static LauncherReleaseAsset? PickUpdateAsset(LauncherRelease release)
-    {
-        var os = GodotLauncher.Core.Platform.HostPlatformExtensions.Current;
-        var arch = GodotLauncher.Core.Platform.HostArchitecture.Current;
-        var tokens = os switch
-        {
-            GodotLauncher.Core.Platform.HostPlatform.Windows => new[] { "win-x64", "win-arm64", "win" },
-            GodotLauncher.Core.Platform.HostPlatform.MacOS => arch == GodotLauncher.Core.Models.CpuArchitecture.Arm64
-                ? new[] { "osx-arm64", "osx-x64" }
-                : new[] { "osx-x64", "osx-arm64" },
-            _ => new[] { "linux-x64", "linux-arm64", "linux" },
-        };
-
-        foreach (var token in tokens)
-        {
-            var match = release.Assets.FirstOrDefault(asset =>
-                asset.Name.Contains(token, StringComparison.OrdinalIgnoreCase));
-            if (match is not null)
-            {
-                return match;
-            }
-        }
-
-        return null;
+        await Updates.CheckAsync();
     }
 
     [RelayCommand]

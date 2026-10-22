@@ -48,11 +48,21 @@
                          IsVisible="{Binding HasDownloadsCount}" />
             </Grid>
           </Button>
-          <StackPanel Spacing="2" Margin="4,0,0,0">
-            <TextBlock Classes="caption" Text="{Binding StatusText}" />
-            <TextBlock Classes="caption" Text="{Binding StatusDetail}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Classes="caption" Margin="0,6,0,0" Text="{Binding VersionText}" />
-          </StackPanel>
+          <Grid ColumnDefinitions="Auto,*" Margin="4,0,0,0" ColumnSpacing="8">
+            <TextBlock Classes="caption" Text="{Binding VersionText}" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Height="26" Padding="8,0" HorizontalAlignment="Right" Classes="primary"
+                    Command="{Binding Updates.ApplyCommand}" IsVisible="{Binding Updates.CanAct}"
+                    ToolTip.Tip="{Binding Updates.StatusText}">
+              <Grid>
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding Updates.Progress}"
+                             IsVisible="{Binding Updates.IsDownloading}"
+                             Height="26" CornerRadius="6" Background="Transparent"
+                             Foreground="{DynamicResource AccentPressedBrush}" />
+                <TextBlock Text="{Binding Updates.ActionText}" FontSize="11" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+          </Grid>
         </StackPanel>
 
         <StackPanel Spacing="3">

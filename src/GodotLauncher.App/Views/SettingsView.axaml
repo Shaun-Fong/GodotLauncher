@@ -127,19 +127,19 @@
           </Grid>
           <Grid ColumnDefinitions="200,*,Auto">
             <TextBlock Text="{Binding Text.Settings.CheckUpdates}" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1" Classes="caption" Text="{Binding UpdateStatus}" VerticalAlignment="Center"
+            <TextBlock Grid.Column="1" Classes="caption" Text="{Binding Updates.StatusText}" VerticalAlignment="Center"
                        Margin="0,0,10,0" TextWrapping="Wrap" />
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
               <Button Classes="ghost" Content="{Binding Text.Settings.CheckNow}"
-                      Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !IsCheckingUpdates}" />
+                      Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !Updates.IsChecking}" />
               <Button Width="200" Height="34" Padding="0" Classes="primary"
-                      Command="{Binding UpdateActionCommand}" IsVisible="{Binding CanUpdate}">
+                      Command="{Binding Updates.ApplyCommand}" IsVisible="{Binding Updates.CanAct}">
                 <Grid>
-                  <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpdateProgress}"
-                               IsVisible="{Binding IsUpdateDownloading}"
+                  <ProgressBar Minimum="0" Maximum="1" Value="{Binding Updates.Progress}"
+                               IsVisible="{Binding Updates.IsDownloading}"
                                Height="34" CornerRadius="8" Background="Transparent"
                                Foreground="{DynamicResource AccentPressedBrush}" />
-                  <TextBlock Text="{Binding UpdateActionText}" HorizontalAlignment="Center"
+                  <TextBlock Text="{Binding Updates.ActionText}" HorizontalAlignment="Center"
                              VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" />
                 </Grid>
               </Button>

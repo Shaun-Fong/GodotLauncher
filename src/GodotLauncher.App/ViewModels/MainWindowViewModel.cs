@@ -32,7 +32,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
         Projects = new ProjectsViewModel(services, this);
         Explore = new ExploreViewModel(services);
         Installed = new InstalledViewModel(services, this);
-        SettingsPage = new SettingsViewModel(services);
+        Updates = new UpdateViewModel(services);
+        SettingsPage = new SettingsViewModel(services, Updates);
 
         services.CatalogChanged += (_, _) => OnCatalogChanged();
         services.ProjectChanged += (_, _) => UpdateCounts();
@@ -57,6 +58,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     public InstalledViewModel Installed { get; }
 
     public SettingsViewModel SettingsPage { get; }
+
+    /// <summary>Self-update state shared by the sidebar badge and the settings page.</summary>
+    public UpdateViewModel Updates { get; }
 
     public ObservableCollection<DownloadItem> Downloads => Services.Downloads.Items;
 
