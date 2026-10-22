@@ -46,6 +46,11 @@ public sealed partial class ProjectItemViewModel : ObservableObject
 
     public string PathText => Project.Path;
 
+    /// <summary>When the project was last opened, or a hint that it never was.</summary>
+    public string OpenedText => Project.LastOpened is { } opened
+        ? string.Format(L.Projects.Opened, opened.LocalDateTime.ToString("g"))
+        : L.Projects.NeverOpened;
+
     public Strings L => _services.Loc;
 
     /// <summary>Editor version recorded by the project file, e.g. "Godot 4.3".</summary>
@@ -112,6 +117,7 @@ public sealed partial class ProjectItemViewModel : ObservableObject
 
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(PathText));
+        OnPropertyChanged(nameof(OpenedText));
         OnPropertyChanged(nameof(VersionText));
         OnPropertyChanged(nameof(WarningText));
         OnPropertyChanged(nameof(HasWarning));

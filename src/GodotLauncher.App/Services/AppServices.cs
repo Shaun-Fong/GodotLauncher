@@ -89,6 +89,9 @@ public sealed class AppServices : INotifyPropertyChanged
     /// <summary>Raised when the tracked project list changed.</summary>
     public event EventHandler? ProjectChanged;
 
+    /// <summary>Raised after an editor was started, whichever page started it.</summary>
+    public event EventHandler<InstalledVersion>? EditorLaunched;
+
     /// <summary>Raised when the catalog was loaded from cache or refreshed.</summary>
     public event EventHandler? CatalogChanged;
 
@@ -474,6 +477,7 @@ public sealed class AppServices : INotifyPropertyChanged
 
         _ = Library.TouchLaunchedAsync(installation.Id, DateTimeOffset.Now);
         Log.Info($"Launched {installation.VersionId} ({installation.Architecture}): {result.CommandLine}");
+        EditorLaunched?.Invoke(this, installation);
         return result;
     }
 
@@ -548,7 +552,9 @@ public sealed class AppServices : INotifyPropertyChanged
         });
 
         _ = Projects.TouchOpenedAsync(project.Path, DateTimeOffset.Now);
+        _ = Library.TouchLaunchedAsync(editor.Id, DateTimeOffset.Now);
         Log.Info($"Opened project '{project.Path}' with {editor.VersionId} ({editor.Architecture}): {result.CommandLine}");
+        EditorLaunched?.Invoke(this, editor);
         return result;
     }
 

@@ -489,6 +489,8 @@ public sealed class BannerStrings(IReadOnlyDictionary<string, string> values) : 
     public string NetworkTitle => Get(nameof(NetworkTitle));
 
     public string NetworkAction => Get(nameof(NetworkAction));
+
+    public string NetworkHint => Get(nameof(NetworkHint));
     public string NewVersions => Get(nameof(NewVersions));
 
     public string NewVersionsHint => Get(nameof(NewVersionsHint));
@@ -539,6 +541,10 @@ public sealed class ProjectsStrings(IReadOnlyDictionary<string, string> values) 
     public string Count => Get(nameof(Count));
 
     public string SelectVersion => Get(nameof(SelectVersion));
+
+    public string Opened => Get(nameof(Opened));
+
+    public string NeverOpened => Get(nameof(NeverOpened));
 
     public string UnknownVersion => Get(nameof(UnknownVersion));
 

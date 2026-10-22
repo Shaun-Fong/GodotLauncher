@@ -19,9 +19,6 @@ public sealed partial class InstalledViewModel : ViewModelBase
         ReloadFromLibrary();
     }
 
-    /// <summary>Raised after an editor process was started.</summary>
-    public event EventHandler<InstalledVersion>? EditorLaunched;
-
     public ObservableCollection<InstalledItemViewModel> Items { get; } = [];
 
     public bool IsEmpty => Items.Count == 0;
@@ -61,7 +58,6 @@ public sealed partial class InstalledViewModel : ViewModelBase
         {
             var result = Services.Launch(item.Installation);
             Services.Log.Info($"Launched {item.Title} (pid {result.ProcessId}).");
-            EditorLaunched?.Invoke(this, item.Installation);
             ReloadFromLibrary();
         }
         catch (Exception ex)

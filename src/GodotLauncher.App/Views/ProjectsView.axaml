@@ -33,7 +33,7 @@
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:ProjectItemViewModel">
             <Border Classes="card hover" Padding="14,10">
-              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+              <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
                 <Button Classes="rowlink" Command="{Binding LaunchCommand}" ToolTip.Tip="{Binding PathText}">
                   <StackPanel Spacing="4" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -46,13 +46,16 @@
                   </StackPanel>
                 </Button>
 
-                <ComboBox Grid.Column="1" Width="270" VerticalAlignment="Center"
+                <TextBlock Grid.Column="1" Classes="caption" VerticalAlignment="Center"
+                           Text="{Binding OpenedText}" Margin="0,0,6,0" />
+
+                <ComboBox Grid.Column="2" Width="270" VerticalAlignment="Center"
                           ItemsSource="{Binding Editors}"
                           SelectedItem="{Binding SelectedEditor}"
                           PlaceholderText="{Binding L.Projects.SelectVersion}"
                           IsEnabled="{Binding HasEditors}" />
 
-                <Button Grid.Column="2" Classes="ghost" Width="34" Height="34" Padding="0"
+                <Button Grid.Column="3" Classes="ghost" Width="34" Height="34" Padding="0"
                         VerticalAlignment="Center" ToolTip.Tip="{Binding L.Projects.More}">
                   <Path Data="{DynamicResource IconMore}" Width="16" Height="16" Stretch="Uniform"
                         Fill="{DynamicResource TextSecondaryBrush}" />
