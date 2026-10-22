@@ -1,4 +1,4 @@
-name: build
+name: tests
 
 on:
   push:
@@ -30,61 +30,7 @@ jobs:
       - name: Restore
         run: dotnet restore GodotLauncher.slnx
 
+      # Every push and pull request only runs the suites. Packaging and
+      # publishing happen in release.yml, when a version tag is pushed.
       - name: Test
         run: dotnet test GodotLauncher.slnx --configuration Release --no-restore --logger "console;verbosity=normal"
-
-  package:
-    name: package (${{ matrix.rid }})
-    needs: test
-    if: github.event_name != 'pull_request'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            rid: win-x64
-            archive: zip
-          - os: ubuntu-latest
-            rid: linux-x64
-            archive: tar.gz
-          - os: macos-15-intel
-            rid: osx-x64
-            archive: tar.gz
-          - os: macos-14
-            rid: osx-arm64
-            archive: tar.gz
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Publish
-        run: >
-          dotnet publish src/GodotLauncher.App/GodotLauncher.App.csproj
-          --configuration Release
-          --runtime ${{ matrix.rid }}
-          --self-contained true
-          -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:PublishReadyToRun=true
-          -p:DebugType=embedded
-          --output artifacts/${{ matrix.rid }}
-
-      - name: Package (zip)
-        if: matrix.archive == 'zip'
-        shell: pwsh
-        run: Compress-Archive -Path artifacts/${{ matrix.rid }}/* -DestinationPath artifacts/GodotLauncher-${{ matrix.rid }}.zip
-
-      - name: Package (tar.gz)
-        if: matrix.archive == 'tar.gz'
-        shell: bash
-        run: tar -czf artifacts/GodotLauncher-${{ matrix.rid }}.tar.gz -C artifacts/${{ matrix.rid }} .
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: GodotLauncher-${{ matrix.rid }}
-          path: artifacts/GodotLauncher-${{ matrix.rid }}.${{ matrix.archive }}
-          if-no-files-found: error
