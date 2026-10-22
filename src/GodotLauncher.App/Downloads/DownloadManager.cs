@@ -233,7 +233,9 @@ public sealed class DownloadManager : ObservableObject
 
             Dispatch(() => item.SetState(DownloadState.Extracting, strings.Version.Installing));
 
-            var source = ClassifySource(download.UsedUri);
+            // The download may follow redirects to a content host, so classify the
+            // source by the official endpoint the asset was requested from.
+            var source = ClassifySource(asset.DownloadUri);
             var result = await _services.Installer.InstallAsync(
                 item.Version,
                 item.Edition,
