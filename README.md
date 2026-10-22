@@ -44,8 +44,9 @@ A fast, small desktop launcher for <a href="https://godotengine.org/">Godot Engi
 - **Network options** — follow the system proxy, connect directly, or point the launcher at a custom
   HTTP proxy. Catalog refreshes, downloads and update checks use the same setting, and a failed refresh
   shows a non-blocking hint with a shortcut to the network settings.
-- **Launcher updates** — the launcher checks GitHub releases, downloads the archive that matches the
-  current platform, and restarts itself to install the new version.
+- **Launcher updates** — the launcher checks GitHub releases, shows the download speed on the update
+  button itself, cancels on a second click, and restarts into the new version as soon as the archive
+  is ready. If GitHub's API rate limit is hit, the check falls back to the release page.
 - **Portable settings** — human-editable TOML configuration, atomic writes, corrupt files backed up
   instead of crashing.
 

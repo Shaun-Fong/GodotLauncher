@@ -91,6 +91,11 @@ The download pipeline is:
 6. Locate the editor executable, move the staging directory into place and register the installation.
 7. Delete the archive and staging directory.
 
+The .NET archives put their payload one level deep (`Godot_v4.8-beta1_mono_win64/…`), so the
+executable finder searches the archive root and one nested level, and the installer unwraps a staging
+directory that holds a single folder. Managed installs therefore land flattened in `mono/<version>` with
+`GodotSharp/` beside the executable.
+
 Leftover `.part` files are kept, so asking for the same download again after a restart resumes it.
 Staging directories older than an hour are removed at startup instead of accumulating.
 
@@ -173,13 +178,18 @@ Network failures never open a modal dialog. `AppServices.NetworkIssue` holds the
 the shell renders it as a thin banner above the page with a button that jumps to the network settings.
 
 `UpdateChecker` calls `GET /repos/Shaun-Fong/GodotLauncher/releases/latest` and compares the tag with the
-running assembly version. A `404` means "no published release" and is treated as up to date. The app
-checks once in the background at startup and the About panel always offers a manual check.
+running assembly version. A `404` means "no published release" and is treated as up to date. When the
+anonymous API quota is exhausted (403/429), the checker falls back to the public release page
+(`github.com/<owner>/<repo>/releases/latest`), reads the tag from the redirect target and builds the asset
+URLs from the known file names — that path is not rate limited per address. The app checks once in the
+background at startup and the About panel always offers a manual check.
+
+The update button in About is a single control: its label switches to the live download speed, the
+progress bar fills inside it, a second click cancels the download (the `.part` file stays for a resume),
+and a finished archive is applied immediately — the launcher shuts down, the script replaces the files and
+starts the new version without another click.
 
 `UpdateInstaller` applies a downloaded archive without leaving the app in a broken state: it probes the
 install folder for write access, writes a temporary `apply.cmd` (or `apply.sh`), and starts it detached.
 The script waits for the launcher process to exit, unpacks the archive, copies the files over the install
-directory, starts the launcher again and removes the temporary folder and the archive. The About panel
-shows `Download update` while an update is available and `Restart and install` once the archive is on
-disk. The anonymous GitHub API allows 60 requests per hour per address; a 403/429 rate limit is logged
-and reported as a failed check, not as a network problem in the banner.
+directory, starts the launcher again and removes the temporary folder and the archive.

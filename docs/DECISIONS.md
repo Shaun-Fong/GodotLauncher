@@ -164,9 +164,11 @@ A running executable cannot overwrite itself on Windows, so an update is applied
 for the launcher process id to disappear, unpacks the downloaded archive (Expand-Archive on Windows,
 	ar -xf elsewhere), copies the files over the install directory, starts the launcher again and deletes
 the temporary folder and the archive. The About section shows the check result, downloads the asset that
-matches the host platform (win-x64, osx-arm64, ...), then offers "Restart and install". The install
+matches the host platform (win-x64, osx-arm64, ...) with live speed on the button, cancels on a second
+click, and installs as soon as the archive is ready. The install
 folder is probed for write access first: on a read-only location the launcher reports the problem instead
 of leaving a half-replaced directory. Updates are opt-in; nothing is downloaded without the user asking.
+
 ## Proxy handling rebuilds HTTP clients
 
 `HttpClient` instances cannot change their proxy after the first request, so changing the proxy mode
@@ -178,5 +180,22 @@ Linux and macOS and makes "direct connection" actually bypass a system proxy.
 
 The launcher compares its assembly version with the tag of `releases/latest`. A `404` is treated as "no
 release published" rather than an error, which keeps forks and private repositories quiet. Assets are
-picked by platform token; downloading an update copies the archive into the downloads folder and leaves
-replacing the running executable to the user, because the launcher cannot overwrite itself on Windows.
+picked by platform token; downloading an update copies the archive into the downloads folder and the
+downloaded archive is applied by `UpdateInstaller` as soon as it is complete, so no manual replacement
+step is left to the user.
+
+## Rate limits fall back to the release page
+
+The anonymous GitHub API allows 60 requests per hour per address, and this address is often exhausted.
+A 403/429 from the API now triggers a second check against the public release page instead of failing:
+`releases/latest` redirects to `releases/tag/vX.Y.Z`, the tag is read from the redirect, and asset URLs
+are built from the known file names. The page costs one ordinary request and is not subject to the API
+quota, so update checks keep working without a token.
+
+## .NET archives wrap their payload in a folder
+
+`Godot_v4.8-beta1_mono_win64.zip` contains a `Godot_v4.8-beta1_mono_win64/` directory, unlike the
+standard archives which put the executable at the root. Instead of special-casing the .NET edition, the
+executable finder searches the archive root and one nested level, and the installer unwraps a staging
+directory that contains exactly one folder. Both editions therefore end up flattened in their install
+directory, with `GodotSharp/` beside the managed executable.
