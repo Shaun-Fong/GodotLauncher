@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GodotLauncher.Core.Models;
 
 /// <summary>Where an installation came from. Shown in the UI and used for repair hints.</summary>
@@ -71,9 +73,11 @@ public sealed record InstalledVersion
     public string? LaunchArguments { get; init; }
 
     /// <summary>Absolute path of the editor executable.</summary>
+    [JsonIgnore]
     public string ExecutablePath => Path.Combine(InstallPath, ExecutableRelativePath);
 
     /// <summary>Label shown in lists, preferring the user alias.</summary>
+    [JsonIgnore]
     public string Label => string.IsNullOrWhiteSpace(Alias) ? DisplayName : Alias;
 
     /// <summary>Builds the canonical installation key.</summary>
