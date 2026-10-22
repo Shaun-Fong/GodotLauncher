@@ -42,7 +42,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
         services.Downloads.PropertyChanged += OnDownloadsPropertyChanged;
         services.Downloads.Items.CollectionChanged += (_, _) => OnDownloadsCollectionChanged();
 
-        Installed.EditorLaunched += (_, installation) => EditorLaunched?.Invoke(this, installation);
+        // Every launch path (installed page, projects, tray, explore) ends in AppServices, so the
+        // after-launch behaviour is driven from there instead of from each page.
+        services.EditorLaunched += (_, installation) => EditorLaunched?.Invoke(this, installation);
 
         UpdateStatus();
         UpdateCounts();
@@ -232,6 +234,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
         OnPropertyChanged(nameof(AppName));
         OnPropertyChanged(nameof(Tagline));
         OnPropertyChanged(nameof(VersionText));
+        OnPropertyChanged(nameof(NetworkIssue));
+        OnPropertyChanged(nameof(NetworkIssueTitle));
+        OnPropertyChanged(nameof(NetworkIssueAction));
         UpdateStatus();
         UpdateCounts();
         OnCatalogChanged();
@@ -260,7 +265,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     /// <summary>True when the last network operation failed and the hint bar is useful.</summary>
     public bool HasNetworkIssue => Services.HasNetworkIssue;
 
-    public string NetworkIssue => Services.NetworkIssue ?? string.Empty;
+    /// <summary>Localized explanation; the raw error text is offered as a tooltip.</summary>
+    public string NetworkIssue => L.Banner.NetworkHint;
+
+    public string NetworkIssueDetail => Services.NetworkIssue ?? string.Empty;
 
     public string NetworkIssueTitle => L.Banner.NetworkTitle;
 

@@ -129,6 +129,7 @@
           <Grid ColumnDefinitions="200,*,Auto">
             <TextBlock Text="{Binding Text.Settings.CheckUpdates}" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Classes="caption" Text="{Binding Updates.StatusText}" VerticalAlignment="Center"
+                       ToolTip.Tip="{Binding Updates.DetailText}"
                        Margin="0,0,10,0" TextWrapping="Wrap" />
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
               <Button Classes="ghost" Content="{Binding Text.Settings.CheckNow}"

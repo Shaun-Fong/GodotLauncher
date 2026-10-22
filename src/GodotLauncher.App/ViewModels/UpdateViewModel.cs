@@ -59,6 +59,10 @@ public sealed partial class UpdateViewModel : ObservableObject
     [ObservableProperty]
     private string _statusText = string.Empty;
 
+    /// <summary>Technical detail for the last failure, shown as a tooltip.</summary>
+    [ObservableProperty]
+    private string _detailText = string.Empty;
+
     /// <summary>True when the update control should be offered.</summary>
     public bool CanAct => HasUpdate || IsDownloading || IsReady;
 
@@ -129,6 +133,7 @@ public sealed partial class UpdateViewModel : ObservableObject
 
         IsChecking = true;
         StatusText = _services.Loc.Settings.CheckingUpdates;
+        DetailText = string.Empty;
         try
         {
             var release = await _services.CheckForUpdatesAsync();
@@ -273,14 +278,16 @@ public sealed partial class UpdateViewModel : ObservableObject
         }
 
         detail = detail.Trim();
-        if (detail.Length > 160)
+        if (detail.Length > 200)
         {
-            detail = detail[..160] + "...";
+            detail = detail[..200] + "...";
         }
 
-        return string.IsNullOrEmpty(detail)
-            ? _services.Loc.Settings.UpdateCheckFailed
-            : $"{_services.Loc.Settings.UpdateCheckFailed} {detail}";
+        // The operating system localizes exception text with its own UI language, which does not
+        // always match the launcher language. Keep the raw detail out of the sentence and offer it
+        // as a tooltip instead, so the visible status stays in one language.
+        DetailText = detail;
+        return _services.Loc.Settings.UpdateCheckFailed;
     }
 
     private static LauncherReleaseAsset? PickAsset(LauncherRelease release)

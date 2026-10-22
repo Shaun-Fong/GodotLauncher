@@ -139,7 +139,8 @@
           <TextBlock Text="!" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center" />
           <StackPanel Grid.Column="1" Spacing="1">
             <TextBlock Text="{Binding NetworkIssueTitle}" FontWeight="SemiBold" FontSize="12" />
-            <TextBlock Classes="caption" Text="{Binding NetworkIssue}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Classes="caption" Text="{Binding NetworkIssue}" TextTrimming="CharacterEllipsis"
+                       ToolTip.Tip="{Binding NetworkIssueDetail}" />
           </StackPanel>
           <Button Grid.Column="2" Classes="ghost" FontSize="12" MinHeight="26" Padding="9,3"
                   Content="{Binding NetworkIssueAction}" Command="{Binding OpenNetworkSettingsCommand}" />
