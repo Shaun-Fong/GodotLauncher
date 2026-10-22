@@ -37,12 +37,41 @@ public sealed class UpdateChecker
     /// <summary>API endpoint of the latest release.</summary>
     public Uri LatestReleaseEndpoint => new($"https://api.github.com/repos/{_owner}/{_repository}/releases/latest");
 
+    /// <summary>Public release page that redirects to the latest tag.</summary>
+    public Uri LatestReleasePage => new($"https://github.com/{_owner}/{_repository}/releases/latest");
+
+    /// <summary>Archive names produced by the release workflow.</summary>
+    private static readonly string[] KnownAssetNames =
+    [
+        "GodotLauncher-win-x64.zip",
+        "GodotLauncher-win-arm64.zip",
+        "GodotLauncher-linux-x64.tar.gz",
+        "GodotLauncher-linux-arm64.tar.gz",
+        "GodotLauncher-osx-x64.tar.gz",
+        "GodotLauncher-osx-arm64.tar.gz",
+    ];
+
     /// <summary>
     /// Returns the latest release when it is newer than <paramref name="current"/>,
     /// <c>null</c> when the launcher is up to date or no release exists yet.
     /// </summary>
     /// <exception cref="HttpRequestException">The API could not be reached or refused the request.</exception>
     public async Task<LauncherRelease?> CheckAsync(VersionNumber current, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await CheckViaApiAsync(current, cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
+        {
+            // The anonymous API is limited per IP address; the release page
+            // redirect is not, so it keeps update checks working behind a
+            // shared address.
+            return await CheckViaRedirectAsync(current, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task<LauncherRelease?> CheckViaApiAsync(VersionNumber current, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, LatestReleaseEndpoint);
         request.Headers.Accept.ParseAdd("application/vnd.github+json");
@@ -96,6 +125,58 @@ public sealed class UpdateChecker
         }
 
         return new LauncherRelease(version, payload.TagName, page, payload.Body, assets);
+    }
+
+    /// <summary>
+    /// Falls back to the release page redirect, which is not rate limited. The
+    /// archive names are predictable, so the assets can be built without the API.
+    /// </summary>
+    private async Task<LauncherRelease?> CheckViaRedirectAsync(VersionNumber current, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, LatestReleasePage);
+        using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        // With automatic redirects the tag sits in the final request URI; when
+        // the handler surfaces the redirect itself, the Location header carries it.
+        var candidates = new List<Uri?>();
+        if (response.Headers.Location is { } location)
+        {
+            candidates.Add(location.IsAbsoluteUri
+                ? location
+                : new Uri(LatestReleasePage, location));
+        }
+
+        candidates.Add(response.RequestMessage?.RequestUri);
+
+        foreach (var candidate in candidates)
+        {
+            var segment = candidate?.Segments.LastOrDefault()?.Trim('/');
+            if (string.IsNullOrEmpty(segment)
+                || string.Equals(segment, "latest", StringComparison.OrdinalIgnoreCase)
+                || !TryParseTag(segment, out var version)
+                || version.CompareTo(current) <= 0)
+            {
+                continue;
+            }
+
+            var assets = KnownAssetNames
+                .Select(name => new LauncherReleaseAsset(
+                    name,
+                    new Uri($"https://github.com/{_owner}/{_repository}/releases/download/{segment}/{name}"),
+                    0))
+                .ToList();
+
+            var page = new Uri($"https://github.com/{_owner}/{_repository}/releases/tag/{segment}");
+            return new LauncherRelease(version, segment, page, null, assets);
+        }
+
+        return null;
     }
 
     /// <summary>Parses a tag such as <c>v0.2.0</c> into a version number.</summary>

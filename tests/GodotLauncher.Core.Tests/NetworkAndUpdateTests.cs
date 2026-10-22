@@ -116,6 +116,47 @@ public sealed class UpdateCheckerTests
     }
 
     [Fact]
+    public async Task CheckAsync_FallsBackToTheReleasePageWhenRateLimited()
+    {
+        var tagUri = new Uri("https://github.com/owner/repo/releases/tag/v0.9.0");
+        using var handler = new StubHttpHandler(request =>
+        {
+            if (request.RequestUri!.Host == "api.github.com")
+            {
+                return new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            }
+
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("<html>release</html>", Encoding.UTF8, "text/html"),
+            };
+            response.Headers.Location = tagUri;
+            return response;
+        });
+        using var http = new HttpClient(handler);
+        var checker = new UpdateChecker(http, "owner", "repo");
+
+        var release = await checker.CheckAsync(new GodotLauncher.Core.Models.VersionNumber(0, 4, 0));
+
+        Assert.NotNull(release);
+        Assert.Equal("v0.9.0", release!.Tag);
+        var asset = Assert.Single(release.Assets, a => a.Name == "GodotLauncher-win-x64.zip");
+        Assert.Equal(
+            "https://github.com/owner/repo/releases/download/v0.9.0/GodotLauncher-win-x64.zip",
+            asset.DownloadUri.ToString());
+    }
+
+    [Fact]
+    public async Task CheckAsync_ReturnsNullWhenTheFallbackPageHasNoRelease()
+    {
+        using var handler = new StubHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var http = new HttpClient(handler);
+        var checker = new UpdateChecker(http, "owner", "repo");
+
+        Assert.Null(await checker.CheckAsync(new GodotLauncher.Core.Models.VersionNumber(0, 1, 0)));
+    }
+
+    [Fact]
     public void TryParseTag_StripsPrefix()
     {
         Assert.True(UpdateChecker.TryParseTag("v1.2.3", out var version));
