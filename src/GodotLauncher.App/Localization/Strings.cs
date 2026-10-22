@@ -304,6 +304,12 @@ public sealed class SettingsStrings(IReadOnlyDictionary<string, string> values) 
 
     public string UpdateInstallFailed => Get(nameof(UpdateInstallFailed));
 
+    public string UpdatePreparing => Get(nameof(UpdatePreparing));
+
+    public string UpdateInstalling => Get(nameof(UpdateInstalling));
+
+    public string UpdateCancelled => Get(nameof(UpdateCancelled));
+
     public string CurrentVersion => Get(nameof(CurrentVersion));
     public string Title => Get(nameof(Title));
 

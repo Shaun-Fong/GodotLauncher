@@ -132,10 +132,17 @@
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
               <Button Classes="ghost" Content="{Binding Text.Settings.CheckNow}"
                       Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !IsCheckingUpdates}" />
-              <Button Classes="primary" Content="{Binding Text.Settings.DownloadUpdate}"
-                      Command="{Binding DownloadUpdateCommand}" IsVisible="{Binding HasUpdate}" />
-              <Button Classes="primary" Content="{Binding Text.Settings.InstallUpdate}"
-                      Command="{Binding InstallUpdateCommand}" IsVisible="{Binding IsUpdateReady}" />
+              <Button Width="200" Height="34" Padding="0" Classes="primary"
+                      Command="{Binding UpdateActionCommand}" IsVisible="{Binding CanUpdate}">
+                <Grid>
+                  <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpdateProgress}"
+                               IsVisible="{Binding IsUpdateDownloading}"
+                               Height="34" CornerRadius="8" Background="Transparent"
+                               Foreground="{DynamicResource AccentPressedBrush}" />
+                  <TextBlock Text="{Binding UpdateActionText}" HorizontalAlignment="Center"
+                             VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" />
+                </Grid>
+              </Button>
             </StackPanel>
           </Grid>
           <Grid ColumnDefinitions="200,*">

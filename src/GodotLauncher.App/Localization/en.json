@@ -231,5 +231,8 @@
   "Version.New": "NEW",
   "Version.Queued": "Queued",
   "Version.Released": "Released",
-  "Version.Resume": "Resume"
+  "Version.Resume": "Resume",
+  "Settings.UpdatePreparing": "Connecting…",
+  "Settings.UpdateInstalling": "Restarting to install…",
+  "Settings.UpdateCancelled": "Update download cancelled."
 }

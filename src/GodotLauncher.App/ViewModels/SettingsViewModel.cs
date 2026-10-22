@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using GodotLauncher.App.Localization;
 using GodotLauncher.App.Mvvm;
 using GodotLauncher.App.Services;
+using GodotLauncher.Core.Downloads;
 using GodotLauncher.Core.Net;
 using GodotLauncher.Core.Settings;
 using GodotLauncher.Core.Updates;
@@ -19,9 +20,14 @@ namespace GodotLauncher.App.ViewModels;
 /// <summary>Settings page: every option is written back to config.toml immediately.</summary>
 public sealed partial class SettingsViewModel : ViewModelBase
 {
+    private static readonly TimeSpan SavedTextDuration = TimeSpan.FromSeconds(2.5);
+
+    private readonly DispatcherTimer _savedTimer;
+
     private bool _loading;
     private string? _updateArchivePath;
     private string? _updateVersionTag;
+    private CancellationTokenSource? _updateDownloadCts;
 
     public SettingsViewModel(AppServices services)
         : base(services)
@@ -36,6 +42,14 @@ public sealed partial class SettingsViewModel : ViewModelBase
         BuildOptions();
         Load();
         services.PropertyChanged += OnServicePropertyChanged;
+
+        // "Settings saved" is only useful right after a change, so it fades away.
+        _savedTimer = new DispatcherTimer { Interval = SavedTextDuration };
+        _savedTimer.Tick += (_, _) =>
+        {
+            _savedTimer.Stop();
+            SavedText = string.Empty;
+        };
     }
 
     public ObservableCollection<LabeledOption<ThemeMode>> Themes { get; }
@@ -125,6 +139,42 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isUpdateReady;
 
+    /// <summary>True while the update archive is being downloaded.</summary>
+    [ObservableProperty]
+    private bool _isUpdateDownloading;
+
+    /// <summary>Download progress from 0 to 1, painted as the button fill.</summary>
+    [ObservableProperty]
+    private double _updateProgress;
+
+    /// <summary>Label of the update button: action name or live download speed.</summary>
+    [ObservableProperty]
+    private string _updateActionText = string.Empty;
+
+    /// <summary>True when the update button should be offered at all.</summary>
+    public bool CanUpdate => HasUpdate || IsUpdateDownloading;
+
+    partial void OnHasUpdateChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanUpdate));
+        UpdateUpdateActionText();
+    }
+
+    partial void OnIsUpdateDownloadingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanUpdate));
+        UpdateUpdateActionText();
+    }
+
+    private void UpdateUpdateActionText()
+    {
+        if (IsUpdateDownloading)
+        {
+            return;
+        }
+
+        UpdateActionText = HasUpdate ? L.Settings.DownloadUpdate : L.Settings.InstallUpdate;
+    }
     public string VersionText => $"Godot Launcher {AppServices.AppVersion}";
 
     public string DataFolder => Services.Paths.DataDirectory;
@@ -419,9 +469,29 @@ public sealed partial class SettingsViewModel : ViewModelBase
             : $"{L.Settings.UpdateCheckFailed} {detail}";
     }
 
-    [RelayCommand]
-    private async Task DownloadUpdateAsync()
+    /// <summary>
+    /// Single update button: starts the download, shows live speed on its face,
+    /// cancels when clicked again and installs as soon as the archive is ready.
+    /// The command allows concurrent executions so the second click can reach the
+    /// cancel branch while the first download is still running.
+    /// </summary>
+    [RelayCommand(AllowConcurrentExecutions = true)]
+    private async Task UpdateActionAsync()
     {
+        if (IsUpdateDownloading)
+        {
+            _updateDownloadCts?.Cancel();
+            return;
+        }
+
+        // A downloaded archive that could not be applied (for example because the
+        // install folder is read-only) retries the install instead of downloading.
+        if (IsUpdateReady && !string.IsNullOrEmpty(_updateArchivePath))
+        {
+            InstallUpdate();
+            return;
+        }
+
         var release = Services.AvailableUpdate;
         var asset = release is null ? null : PickUpdateAsset(release);
         if (asset is null)
@@ -429,20 +499,55 @@ public sealed partial class SettingsViewModel : ViewModelBase
             return;
         }
 
+        _updateDownloadCts = new CancellationTokenSource();
+        var token = _updateDownloadCts.Token;
+        IsUpdateDownloading = true;
+        UpdateProgress = 0;
+        UpdateActionText = L.Settings.UpdatePreparing;
         UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateAvailable, release!.Tag);
+
+        var progress = new Progress<DownloadProgress>(report =>
+        {
+            UpdateProgress = report.Fraction ?? 0;
+            UpdateActionText = string.IsNullOrWhiteSpace(report.SpeedText)
+                ? L.Settings.UpdatePreparing
+                : report.SpeedText;
+        });
+
         try
         {
-            var path = await Services.DownloadUpdateAsync(asset);
+            var path = await Services.DownloadUpdateAsync(asset, progress, token);
             _updateArchivePath = path;
             _updateVersionTag = release.Tag;
-            HasUpdate = false;
-            IsUpdateReady = true;
+            UpdateProgress = 1;
+            UpdateActionText = L.Settings.UpdateInstalling;
             UpdateStatus = string.Format(CultureInfo.CurrentCulture, L.Settings.UpdateReady, release.Tag);
+            IsUpdateReady = true;
+            InstallUpdate();
+
+            // Reaching this point means the restart script could not be started.
+            IsUpdateDownloading = false;
+            UpdateProgress = 0;
+            UpdateActionText = L.Settings.InstallUpdate;
+        }
+        catch (OperationCanceledException)
+        {
+            IsUpdateDownloading = false;
+            UpdateProgress = 0;
+            UpdateStatus = L.Settings.UpdateCancelled;
+            Services.Log.Info("Launcher update download cancelled.");
         }
         catch (Exception exception)
         {
+            IsUpdateDownloading = false;
+            UpdateProgress = 0;
             Services.Log.Error("Could not download the launcher update.", exception);
-            UpdateStatus = L.Settings.UpdateCheckFailed;
+            UpdateStatus = DescribeUpdateFailure(exception);
+        }
+        finally
+        {
+            _updateDownloadCts?.Dispose();
+            _updateDownloadCts = null;
         }
     }
 
@@ -631,9 +736,16 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private void Apply(Func<LauncherSettings, LauncherSettings> change)
     {
         Services.UpdateSettings(change);
+        ShowSaved();
+    }
+
+    private void ShowSaved()
+    {
         SavedText = L.Settings.Saved;
+        _savedTimer.Stop();
+        _savedTimer.Start();
     }
 
     [RelayCommand]
-    private void MarkSaved() => SavedText = L.Settings.Saved;
+    private void MarkSaved() => ShowSaved();
 }

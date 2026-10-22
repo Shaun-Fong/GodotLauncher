@@ -231,5 +231,8 @@
   "Version.New": "新",
   "Version.Queued": "队列中",
   "Version.Released": "发布于",
-  "Version.Resume": "继续"
+  "Version.Resume": "继续",
+  "Settings.UpdatePreparing": "正在连接…",
+  "Settings.UpdateInstalling": "正在重启安装…",
+  "Settings.UpdateCancelled": "已取消更新下载。"
 }
