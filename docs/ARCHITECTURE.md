@@ -115,6 +115,16 @@ requested, prepends per-version arguments, and starts the process detached
 The launcher then applies the configured after-launch behaviour: hide to tray (default), stay visible or
 quit. `last_launched` is written asynchronously.
 
+## Blog
+
+`BlogClient` scrapes the public archive at `https://godotengine.org/blog/`. Each page contains 24
+`article-card` blocks; the parser keys off that markup, resolves relative links against the blog host,
+and throws `BlogException` when a page has no cards so a redesign fails loudly instead of showing an
+empty list. The page count is discovered once with a binary search over a bounded page range, and the
+result is cached in `BlogViewModel` so paging back and forth does not hit the network again. Covers are
+decoded to 320 px wide bitmaps, cached by URL and loaded four at a time. Posts open in the default
+browser; the page itself never navigates away from the launcher.
+
 ## Shell
 
 - `MainWindowViewModel` owns navigation, the status/banner line, counts, the downloads drawer and the

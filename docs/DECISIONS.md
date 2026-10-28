@@ -139,6 +139,14 @@ application. Options for a future release: publish with NativeAOT, trim Fluent t
 the shell to a lighter toolkit while keeping the core library. This is documented as a known gap rather
 than silently relaxing the target.
 
+## Blog posts come from the HTML archive
+
+The blog page uses `rss.json` only for the handful of newest posts, so the archive is scraped from the
+rendered `article-card` markup instead. Pagination is a plain page number (`/blog/2/`), and the total
+number of pages is found by a binary search over a bounded range (currently 34 pages). The parser fails
+loudly when the expected markup disappears, which is preferable to silently showing an empty blog after
+a site redesign.
+
 ## Packaging and distribution
 
 Every push and pull request runs only the test suites (`build.yml`); packaging and publishing happen
