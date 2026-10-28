@@ -140,9 +140,12 @@ public sealed partial class BlogClient(HttpClient http, string baseUrl = "https:
 
     private static string AbsoluteUrl(string href, Uri siteRoot)
     {
-        if (Uri.TryCreate(href, UriKind.Absolute, out var absolute))
+        // Only web links count as absolute here: on Unix a leading slash parses as a file URI,
+        // which would turn "/article/x/" into "file:///article/x/" and break the browser link.
+        if (href.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || href.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
         {
-            return absolute.ToString();
+            return href;
         }
 
         return new Uri(siteRoot, href).ToString();
