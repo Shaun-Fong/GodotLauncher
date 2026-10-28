@@ -22,6 +22,7 @@ public sealed class Strings
         Installed = new InstalledStrings(values);
         Settings = new SettingsStrings(values);
         Projects = new ProjectsStrings(values);
+        Blog = new BlogStrings(values);
         Tray = new TrayStrings(values);
         Dialog = new DialogStrings(values);
         Error = new ErrorStrings(values);
@@ -49,6 +50,8 @@ public sealed class Strings
     public SettingsStrings Settings { get; }
 
     public ProjectsStrings Projects { get; }
+
+    public BlogStrings Blog { get; }
 
     public TrayStrings Tray { get; }
 
@@ -88,6 +91,8 @@ public sealed class NavStrings(IReadOnlyDictionary<string, string> values) : Str
     public string Explore => Get(nameof(Explore));
 
     public string Installed => Get(nameof(Installed));
+
+    public string Blog => Get(nameof(Blog));
 
     public string Settings => Get(nameof(Settings));
 }
@@ -590,3 +595,33 @@ public sealed class CommonStrings(IReadOnlyDictionary<string, string> values) : 
     public string Browse => Get(nameof(Browse));
     public string Save => Get(nameof(Save));
 }
+
+public sealed class BlogStrings(IReadOnlyDictionary<string, string> values) : StringGroup(values, "Blog")
+{
+    public string Title => Get(nameof(Title));
+
+    public string Subtitle => Get(nameof(Subtitle));
+
+    public string Refresh => Get(nameof(Refresh));
+
+    public string Loading => Get(nameof(Loading));
+
+    public string Empty => Get(nameof(Empty));
+
+    public string EmptyHint => Get(nameof(EmptyHint));
+
+    public string Error => Get(nameof(Error));
+
+    public string Retry => Get(nameof(Retry));
+
+    public string Previous => Get(nameof(Previous));
+
+    public string Next => Get(nameof(Next));
+
+    public string PageInfo => Get(nameof(PageInfo));
+
+    public string PageInfoUnknown => Get(nameof(PageInfoUnknown));
+
+    public string OpenFailed => Get(nameof(OpenFailed));
+}
+

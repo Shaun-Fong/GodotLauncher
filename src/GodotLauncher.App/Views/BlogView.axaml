@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GodotLauncher.App.ViewModels"
+             x:Class="GodotLauncher.App.Views.BlogView"
+             x:DataType="vm:BlogViewModel">
+  <Grid RowDefinitions="Auto,Auto,*">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="h1" Text="{Binding Text.Blog.Title}" />
+        <TextBlock Classes="subtle" Text="{Binding Text.Blog.Subtitle}" TextWrapping="Wrap" />
+      </StackPanel>
+      <Button Grid.Column="1" Classes="secondary" VerticalAlignment="Top" Margin="12,0,0,0"
+              Command="{Binding ReloadCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+          <Path Data="{DynamicResource IconRefresh}" Width="13" Height="13" Stretch="Uniform"
+                Fill="{DynamicResource AccentBrush}" />
+          <TextBlock Text="{Binding Text.Blog.Refresh}" />
+        </StackPanel>
+      </Button>
+    </Grid>
+
+    <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
+      <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" Height="2" />
+      <Border IsVisible="{Binding HasError}" Padding="12,9" CornerRadius="8"
+              Background="{DynamicResource SurfaceAltBrush}" BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+          <TextBlock Text="!" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"
+                     VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1" Text="{Binding ErrorText}" VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" />
+          <Button Grid.Column="2" Classes="ghost" FontSize="12" MinHeight="26" Padding="9,3"
+                  Content="{Binding Text.Blog.Retry}" Command="{Binding RetryCommand}" />
+        </Grid>
+      </Border>
+    </StackPanel>
+
+    <Grid Grid.Row="2">
+      <ScrollViewer x:Name="PostScroller" Margin="0,10,0,0" HorizontalScrollBarVisibility="Disabled">
+      <!-- Bottom margin keeps the last card scrollable above the floating pager. -->
+      <Grid Margin="0,0,0,76">
+        <ItemsControl ItemsSource="{Binding Posts}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:BlogPostViewModel">
+              <Button Classes="blogcard" Command="{Binding OpenCommand}" ToolTip.Tip="{Binding Url}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                  <Border Width="168" Height="94" CornerRadius="8" ClipToBounds="True"
+                          Background="{DynamicResource SurfaceAltBrush}">
+                    <Panel>
+                      <Path Data="{DynamicResource IconBlog}" Width="26" Height="26" Stretch="Uniform"
+                            Fill="{DynamicResource TextMutedBrush}" Opacity="0.5"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            IsVisible="{Binding !HasThumbnail}" />
+                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                    </Panel>
+                  </Border>
+                  <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
+                               TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="caption" Text="{Binding MetaText}" />
+                    <TextBlock Classes="subtle" Text="{Binding Summary}" IsVisible="{Binding HasSummary}"
+                               TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </Grid>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel IsVisible="{Binding ShowEmptyState}" Spacing="6" Margin="0,60,0,0"
+                    HorizontalAlignment="Center" VerticalAlignment="Top">
+          <TextBlock Classes="card-title" Text="{Binding Text.Blog.Empty}" HorizontalAlignment="Center" />
+          <TextBlock Classes="subtle" Text="{Binding Text.Blog.EmptyHint}" HorizontalAlignment="Center"
+                     TextWrapping="Wrap" TextAlignment="Center" MaxWidth="360" />
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+
+    <Border VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,12" Padding="14,8"
+            CornerRadius="12" Background="{DynamicResource SidebarBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+            BoxShadow="0 10 28 0 #55000000" IsVisible="{Binding HasPosts}">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+        <Button Classes="page" Command="{Binding PreviousCommand}" IsEnabled="{Binding CanGoPrevious}"
+                Content="‹" FontSize="16" ToolTip.Tip="{Binding Text.Blog.Previous}" />
+        <ItemsControl ItemsSource="{Binding PageLinks}" VerticalAlignment="Center">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:BlogPageLink">
+              <Grid>
+                <Button Classes="page" Classes.active="{Binding IsCurrent}" Content="{Binding Label}"
+                        Command="{Binding Command}" IsVisible="{Binding !IsEllipsis}" />
+                <TextBlock Text="…" IsVisible="{Binding IsEllipsis}" Margin="5,0"
+                           VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Classes="page" Command="{Binding NextCommand}" IsEnabled="{Binding CanGoNext}"
+                Content="›" FontSize="16" ToolTip.Tip="{Binding Text.Blog.Next}" />
+        <Border Width="1" Height="16" Margin="10,0" Background="{DynamicResource BorderBrush}" />
+        <TextBlock Classes="caption" Text="{Binding PageInfo}" VerticalAlignment="Center" Margin="4,0,0,0" />
+      </StackPanel>
+    </Border>
+    </Grid>
+  </Grid>
+</UserControl>

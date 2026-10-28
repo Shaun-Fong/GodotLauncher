@@ -14,7 +14,8 @@
     <StreamGeometry x:Key="IconProject">M3 5a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5zm2 3v10h14V8H5z</StreamGeometry>
     <StreamGeometry x:Key="IconAdd">M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7V4z</StreamGeometry>
     <StreamGeometry x:Key="IconMore">M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z</StreamGeometry>
-    <StreamGeometry x:Key="IconStop">M7 7h10v10H7z</StreamGeometry>
+    <StreamGeometry x:Key="IconBlog">M4 5h13a1 1 0 0 1 1 1v1h2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5zm2 2v12h11V7H6zm2 2h7v2H8V9zm0 4h7v2H8v-2zm0 3h5v2H8v-2z</StreamGeometry>
+  <StreamGeometry x:Key="IconStop">M7 7h10v10H7z</StreamGeometry>
   </Styles.Resources>
 
   <Style Selector="Window">
@@ -426,5 +427,51 @@
   <Style Selector="Button.update:pointerover controls|ProgressFill">
     <Setter Property="Track" Value="{DynamicResource DangerTrackBrush}" />
     <Setter Property="Fill" Value="{DynamicResource DangerFillBrush}" />
+  </Style>
+
+  <!-- Blog cards: the whole row is a button that opens the post in the browser. -->
+  <Style Selector="Button.blogcard">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="10" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Margin" Value="0,0,0,8" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Button.blogcard:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+  </Style>
+
+  <Style Selector="Button.blogcard:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
+  </Style>
+
+  <!-- Pagination buttons in the blog footer. -->
+  <Style Selector="Button.page">
+    <Setter Property="MinWidth" Value="34" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Padding" Value="8,0" />
+    <Setter Property="Margin" Value="1,0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.page.active">
+    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 </Styles>

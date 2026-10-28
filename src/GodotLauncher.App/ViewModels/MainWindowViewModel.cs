@@ -18,6 +18,7 @@ public enum ShellPage
     Projects,
     Explore,
     Installed,
+    Blog,
     Settings
 }
 
@@ -32,6 +33,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
         Projects = new ProjectsViewModel(services, this);
         Explore = new ExploreViewModel(services);
         Installed = new InstalledViewModel(services, this);
+        Blog = new BlogViewModel(services);
         Updates = new UpdateViewModel(services);
         SettingsPage = new SettingsViewModel(services, Updates);
 
@@ -58,6 +60,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
     public ExploreViewModel Explore { get; }
 
     public InstalledViewModel Installed { get; }
+
+    /// <summary>Latest posts from the official Godot blog.</summary>
+    public BlogViewModel Blog { get; }
 
     public SettingsViewModel SettingsPage { get; }
 
@@ -114,6 +119,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
 
     public bool IsInstalledSelected => Page == ShellPage.Installed;
 
+    public bool IsBlogSelected => Page == ShellPage.Blog;
+
     public bool IsSettingsSelected => Page == ShellPage.Settings;
 
     public bool HasDialog => Dialog is not null;
@@ -134,6 +141,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
 
     [RelayCommand]
     private void ShowInstalled() => Page = ShellPage.Installed;
+
+    [RelayCommand]
+    private void ShowBlog() => Page = ShellPage.Blog;
 
     [RelayCommand]
     private void ShowSettings() => Page = ShellPage.Settings;
@@ -252,6 +262,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase, IDialogHost
         OnPropertyChanged(nameof(IsProjectsSelected));
         OnPropertyChanged(nameof(IsExploreSelected));
         OnPropertyChanged(nameof(IsInstalledSelected));
+        OnPropertyChanged(nameof(IsBlogSelected));
         OnPropertyChanged(nameof(IsSettingsSelected));
 
         if (value == ShellPage.Installed)

@@ -9,6 +9,7 @@ using Avalonia.Styling;
 using GodotLauncher.App.Downloads;
 using GodotLauncher.App.Localization;
 using GodotLauncher.Core.Assets;
+using GodotLauncher.Core.Blog;
 using GodotLauncher.Core.Catalog;
 using GodotLauncher.Core.Downloads;
 using GodotLauncher.Core.Install;
@@ -86,6 +87,7 @@ public sealed class AppServices : INotifyPropertyChanged
         Projects = new ProjectStore(paths.ProjectsFile);
         Launcher = new EditorLauncher();
         Updates = new UpdateChecker(Http, "Shaun-Fong", "GodotLauncher");
+        Blog = new BlogClient(Http);
         Downloads = new DownloadManager(this);
 
         Library.Changed += (_, _) => RaiseOnUiThread(() => InstallationChanged?.Invoke(this, EventArgs.Empty));
@@ -155,6 +157,9 @@ public sealed class AppServices : INotifyPropertyChanged
     /// <summary>Reads the latest launcher release from GitHub.</summary>
     public UpdateChecker Updates { get; private set; }
 
+    /// <summary>Reads the official Godot blog archive.</summary>
+    public IBlogClient Blog { get; private set; }
+
     /// <summary>Newer release found by the last update check, if any.</summary>
     public LauncherRelease? AvailableUpdate { get; private set; }
 
@@ -169,6 +174,9 @@ public sealed class AppServices : INotifyPropertyChanged
 
     /// <summary>Latest catalog shown to the user, cached or fresh.</summary>
     public VersionCatalog? Catalog { get; private set; }
+
+    /// <summary>Test seam: replaces the blog reader so pages can be exercised offline.</summary>
+    internal void SetBlogClient(IBlogClient blog) => Blog = blog;
 
     /// <summary>Test seam: installs a catalog without touching the network.</summary>
     internal void SetCatalog(VersionCatalog catalog)
@@ -516,6 +524,7 @@ public sealed class AppServices : INotifyPropertyChanged
             CatalogCache);
         Downloader = new HttpDownloader(DownloadHttp);
         Updates = new UpdateChecker(Http, "Shaun-Fong", "GodotLauncher");
+        Blog = new BlogClient(Http);
 
         previousHttp.Dispose();
         previousDownload.Dispose();
@@ -635,6 +644,12 @@ public sealed class AppServices : INotifyPropertyChanged
     /// <summary>Opens a file, folder or URL with the operating system handler.</summary>
     public void OpenExternally(string target)
     {
+        if (OpenExternallyOverride is { } callback)
+        {
+            callback(target);
+            return;
+        }
+
         try
         {
             Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
@@ -644,6 +659,9 @@ public sealed class AppServices : INotifyPropertyChanged
             Log.Error($"Could not open '{target}'.", ex);
         }
     }
+
+    /// <summary>Test seam: receives external-open requests instead of starting a process.</summary>
+    internal Action<string>? OpenExternallyOverride { get; set; }
 
     /// <summary>Removes extraction directories left behind by an interrupted install.</summary>
     public void CleanStagingDirectories()

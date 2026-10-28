@@ -151,6 +151,10 @@ public partial class MainWindow : Window
             case ShellPage.Installed when InstalledHost.Content is null:
                 InstalledHost.Content = new InstalledView { DataContext = _viewModel.Installed };
                 break;
+            case ShellPage.Blog when BlogHost.Content is null:
+                BlogHost.Content = new BlogView { DataContext = _viewModel.Blog };
+                _ = _viewModel.Blog.EnsureLoadedAsync();
+                break;
             case ShellPage.Settings when SettingsHost.Content is null:
                 SettingsHost.Content = new SettingsView { DataContext = _viewModel.SettingsPage };
                 break;

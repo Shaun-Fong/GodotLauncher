@@ -94,6 +94,12 @@
                          IsVisible="{Binding HasInstalledCount}" />
             </Grid>
           </Button>
+          <Button Classes="nav" Classes.active="{Binding IsBlogSelected}" Command="{Binding ShowBlogCommand}">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+              <Path Data="{DynamicResource IconBlog}" Width="15" Height="15" Stretch="Uniform" Fill="{Binding $parent[Button].Foreground}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Margin="10,0,0,0" Text="{Binding Text.Nav.Blog}" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
           <Button Classes="nav" Classes.active="{Binding IsSettingsSelected}" Command="{Binding ShowSettingsCommand}">
             <Grid ColumnDefinitions="Auto,*,Auto">
               <Path Data="{DynamicResource IconSettings}" Width="15" Height="15" Stretch="Uniform" Fill="{Binding $parent[Button].Foreground}" VerticalAlignment="Center" />
@@ -158,6 +164,9 @@
         </Panel>
         <Panel IsVisible="{Binding IsInstalledSelected}">
           <ContentControl x:Name="InstalledHost" />
+        </Panel>
+        <Panel IsVisible="{Binding IsBlogSelected}">
+          <ContentControl x:Name="BlogHost" />
         </Panel>
         <Panel IsVisible="{Binding IsSettingsSelected}">
           <ContentControl x:Name="SettingsHost" />
