@@ -82,7 +82,7 @@ public sealed class FileLog : IAppLog, IDisposable
 
         if (exception is not null)
         {
-            builder.Append(" | ").Append(exception.GetType().Name).Append(": ").Append(exception.Message);
+            builder.Append(" | ").Append(exception);
         }
 
         var line = builder.ToString();
